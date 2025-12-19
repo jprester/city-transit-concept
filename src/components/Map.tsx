@@ -10,16 +10,20 @@ import {
   metroStations,
   gondolaStations,
   developmentZones,
+  premetroTunnel,
+  premetroStations,
 } from "../data/transitNetwork";
 import { createGondolaLayer } from "../layers/GondolaLayer";
 
 // Using a public demo token - in production you'd use your own
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+mapboxgl.accessToken =
+  "pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw";
 
 interface LayerVisibility {
   metroA: boolean;
   metroB: boolean;
   metroC: boolean;
+  premetro: boolean;
   gondola: boolean;
   stations: boolean;
   development: boolean;
@@ -33,6 +37,7 @@ export default function Map() {
     metroA: true,
     metroB: true,
     metroC: true,
+    premetro: true,
     gondola: true,
     stations: true,
     development: true,
@@ -94,10 +99,81 @@ export default function Map() {
             "#a855f7",
             "mixed",
             "#3b82f6",
+            "commercial",
+            "#f97316",
             "#6b7280",
           ],
           "line-width": 2,
           "line-dasharray": [2, 2],
+        },
+      });
+
+      // Add Premetro Tunnel
+      m.addSource("premetro-tunnel", {
+        type: "geojson",
+        data: premetroTunnel,
+      });
+
+      m.addLayer({
+        id: "premetro-tunnel",
+        type: "line",
+        source: "premetro-tunnel",
+        paint: {
+          "line-color": premetroTunnel.properties.color,
+          "line-width": 6,
+          "line-opacity": 0.9,
+        },
+      });
+
+      // Animated dash for premetro
+      m.addLayer({
+        id: "premetro-tunnel-animated",
+        type: "line",
+        source: "premetro-tunnel",
+        paint: {
+          "line-color": "#ffffff",
+          "line-width": 2,
+          "line-dasharray": [2, 4],
+          "line-opacity": 0.5,
+        },
+      });
+
+      // Premetro stations
+      m.addSource("premetro-stations", {
+        type: "geojson",
+        data: premetroStations,
+      });
+
+      // Portal markers (diamond shape via rotation)
+      m.addLayer({
+        id: "premetro-portals",
+        type: "circle",
+        source: "premetro-stations",
+        filter: ["==", ["get", "isPortal"], true],
+        paint: {
+          "circle-radius": 8,
+          "circle-color": premetroTunnel.properties.color,
+          "circle-stroke-width": 3,
+          "circle-stroke-color": "#ffffff",
+        },
+      });
+
+      // Underground stations
+      m.addLayer({
+        id: "premetro-underground",
+        type: "circle",
+        source: "premetro-stations",
+        filter: ["!=", ["get", "isPortal"], true],
+        paint: {
+          "circle-radius": [
+            "case",
+            ["==", ["get", "isMajor"], true],
+            9,
+            6
+          ],
+          "circle-color": premetroTunnel.properties.color,
+          "circle-stroke-width": 2,
+          "circle-stroke-color": "#ffffff",
         },
       });
 
@@ -419,6 +495,10 @@ export default function Map() {
     setVis("gondola-line", visibility.gondola);
     setVis("gondola-3d", visibility.gondola);
     setVis("gondola-stations", visibility.gondola);
+    setVis("premetro-tunnel", visibility.premetro);
+    setVis("premetro-tunnel-animated", visibility.premetro);
+    setVis("premetro-portals", visibility.premetro);
+    setVis("premetro-underground", visibility.premetro);
     setVis("metro-stations-regular", visibility.stations);
     setVis("metro-stations-interchange-outer", visibility.stations);
     setVis("station-labels", visibility.stations);
@@ -515,6 +595,24 @@ export default function Map() {
           <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
             <input
               type="checkbox"
+              checked={visibility.premetro}
+              onChange={() => toggleLayer("premetro")}
+              style={{ accentColor: "#8b5cf6" }}
+            />
+            <span
+              style={{
+                width: "12px",
+                height: "12px",
+                background: "#8b5cf6",
+                borderRadius: "2px",
+              }}
+            />
+            <span style={{ fontSize: "14px" }}>🚇 Premetro Tunnel</span>
+          </label>
+
+          <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+            <input
+              type="checkbox"
               checked={visibility.gondola}
               onChange={() => toggleLayer("gondola")}
               style={{ accentColor: "#f59e0b" }}
@@ -562,7 +660,8 @@ export default function Map() {
             <strong style={{ color: "#9ca3af" }}>Legend:</strong>
           </p>
           <p style={{ margin: "0 0 4px 0" }}>⚪ Large = Interchange station</p>
-          <p style={{ margin: "0 0 4px 0" }}>🟠 Orange dots = Gondola stations</p>
+          <p style={{ margin: "0 0 4px 0" }}>🟣 Purple = Premetro (underground tram)</p>
+          <p style={{ margin: "0 0 4px 0" }}>🟠 Orange = Gondola stations</p>
           <p style={{ margin: "0" }}>Click stations for details</p>
         </div>
       </div>
