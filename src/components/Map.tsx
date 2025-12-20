@@ -16,8 +16,7 @@ import {
 import { createGondolaLayer } from "../layers/GondolaLayer";
 
 // Using a public demo token - in production you'd use your own
-mapboxgl.accessToken =
-  "pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw";
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 interface LayerVisibility {
   metroA: boolean;
