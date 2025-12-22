@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+
 import {
-  ZAGREB_CENTER,
   metroLineA,
   metroLineB,
   metroLineC,
@@ -12,6 +12,7 @@ import {
   developmentZones,
   premetroTunnel,
   premetroStations,
+  STATION_GLAVNI_KOLODVOR,
 } from "../data/transitNetwork";
 import { createGondolaLayer } from "../layers/GondolaLayer";
 
@@ -48,10 +49,10 @@ export default function Map() {
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [ZAGREB_CENTER.lng, ZAGREB_CENTER.lat],
-      zoom: ZAGREB_CENTER.zoom,
-      pitch: 45,
-      bearing: -15,
+      center: [STATION_GLAVNI_KOLODVOR.lng, STATION_GLAVNI_KOLODVOR.lat], // Glavni kolodvor
+      zoom: 11.5,
+      pitch: 0,
+      bearing: 0,
       antialias: true,
     });
 
@@ -164,12 +165,7 @@ export default function Map() {
         source: "premetro-stations",
         filter: ["!=", ["get", "isPortal"], true],
         paint: {
-          "circle-radius": [
-            "case",
-            ["==", ["get", "isMajor"], true],
-            9,
-            6
-          ],
+          "circle-radius": ["case", ["==", ["get", "isMajor"], true], 9, 6],
           "circle-color": premetroTunnel.properties.color,
           "circle-stroke-width": 2,
           "circle-stroke-color": "#ffffff",
@@ -365,10 +361,10 @@ export default function Map() {
       let dashOffset = 0;
       function animateDash() {
         dashOffset -= 0.5;
-        
+
         // Create moving dash effect by updating dasharray
         const offset = Math.abs(dashOffset % 7);
-        
+
         m.setPaintProperty("metro-line-a-animated", "line-dasharray", [
           offset,
           4,
@@ -384,7 +380,7 @@ export default function Map() {
           4,
           3,
         ]);
-        
+
         requestAnimationFrame(animateDash);
       }
       animateDash();
@@ -400,8 +396,10 @@ export default function Map() {
           .setHTML(
             `
             <div style="color: #1f2937; padding: 4px;">
-              <strong>${props.name || 'Station'}</strong><br/>
-              <span style="color: #6b7280;">Metro Line ${props.lines || ''}</span>
+              <strong>${props.name || "Station"}</strong><br/>
+              <span style="color: #6b7280;">Metro Line ${
+                props.lines || ""
+              }</span>
             </div>
           `
           )
@@ -419,8 +417,10 @@ export default function Map() {
           .setHTML(
             `
             <div style="color: #1f2937; padding: 4px;">
-              <strong>${props.name || 'Interchange'}</strong><br/>
-              <span style="color: #6b7280;">Interchange: Lines ${lines.join(", ")}</span>
+              <strong>${props.name || "Interchange"}</strong><br/>
+              <span style="color: #6b7280;">Interchange: Lines ${lines.join(
+                ", "
+              )}</span>
             </div>
           `
           )
@@ -437,8 +437,8 @@ export default function Map() {
           .setHTML(
             `
             <div style="color: #1f2937; padding: 4px;">
-              <strong>🚡 ${props.name || 'Gondola Station'}</strong><br/>
-              <span style="color: #6b7280;">${props.description || ''}</span>
+              <strong>🚡 ${props.name || "Gondola Station"}</strong><br/>
+              <span style="color: #6b7280;">${props.description || ""}</span>
             </div>
           `
           )
@@ -481,7 +481,11 @@ export default function Map() {
 
     const setVis = (layerId: string, visible: boolean) => {
       if (m.getLayer(layerId)) {
-        m.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
+        m.setLayoutProperty(
+          layerId,
+          "visibility",
+          visible ? "visible" : "none"
+        );
       }
     };
 
@@ -498,15 +502,82 @@ export default function Map() {
     setVis("premetro-tunnel-animated", visibility.premetro);
     setVis("premetro-portals", visibility.premetro);
     setVis("premetro-underground", visibility.premetro);
-    setVis("metro-stations-regular", visibility.stations);
-    setVis("metro-stations-interchange-outer", visibility.stations);
-    setVis("station-labels", visibility.stations);
     setVis("development-zones-fill", visibility.development);
     setVis("development-zones-outline", visibility.development);
+
+    // Build filter for metro stations based on visible lines
+    // Stations should show if any of their lines are currently visible
+    const visibleLines: string[] = [];
+    if (visibility.metroA) visibleLines.push("A");
+    if (visibility.metroB) visibleLines.push("B");
+    if (visibility.metroC) visibleLines.push("C");
+
+    // Create filter: show station if any of its lines is in the visible lines list
+    // For interchange stations, they stay visible as long as at least one of their lines is visible
+    const stationFilter: mapboxgl.FilterSpecification =
+      visibleLines.length > 0
+        ? [
+            "any",
+            ...visibleLines.map(
+              (line): mapboxgl.ExpressionSpecification => [
+                "in",
+                line,
+                ["get", "lines"],
+              ]
+            ),
+          ]
+        : ["==", "1", "0"]; // Always false filter when no lines visible
+
+    // Apply filters and visibility to station layers
+    if (m.getLayer("metro-stations-regular")) {
+      m.setLayoutProperty(
+        "metro-stations-regular",
+        "visibility",
+        visibility.stations ? "visible" : "none"
+      );
+      m.setFilter("metro-stations-regular", [
+        "all",
+        ["!=", ["get", "isInterchange"], true],
+        stationFilter,
+      ]);
+    }
+
+    if (m.getLayer("metro-stations-interchange-outer")) {
+      m.setLayoutProperty(
+        "metro-stations-interchange-outer",
+        "visibility",
+        visibility.stations ? "visible" : "none"
+      );
+      m.setFilter("metro-stations-interchange-outer", [
+        "all",
+        ["==", ["get", "isInterchange"], true],
+        stationFilter,
+      ]);
+    }
+
+    if (m.getLayer("station-labels")) {
+      m.setLayoutProperty(
+        "station-labels",
+        "visibility",
+        visibility.stations ? "visible" : "none"
+      );
+      m.setFilter("station-labels", stationFilter);
+    }
   }, [visibility, loaded]);
 
   const toggleLayer = (layer: keyof LayerVisibility) => {
     setVisibility((prev) => ({ ...prev, [layer]: !prev[layer] }));
+  };
+
+  const resetView = () => {
+    if (!map.current) return;
+    map.current.flyTo({
+      center: [15.979, 45.805], // Glavni kolodvor
+      zoom: 11.5,
+      pitch: 0,
+      bearing: 0,
+      duration: 1500,
+    });
   };
 
   return (
@@ -537,7 +608,14 @@ export default function Map() {
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              cursor: "pointer",
+            }}
+          >
             <input
               type="checkbox"
               checked={visibility.metroA}
@@ -555,7 +633,14 @@ export default function Map() {
             <span style={{ fontSize: "14px" }}>Metro Line A</span>
           </label>
 
-          <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              cursor: "pointer",
+            }}
+          >
             <input
               type="checkbox"
               checked={visibility.metroB}
@@ -573,7 +658,14 @@ export default function Map() {
             <span style={{ fontSize: "14px" }}>Metro Line B</span>
           </label>
 
-          <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              cursor: "pointer",
+            }}
+          >
             <input
               type="checkbox"
               checked={visibility.metroC}
@@ -591,7 +683,14 @@ export default function Map() {
             <span style={{ fontSize: "14px" }}>Metro Line C</span>
           </label>
 
-          <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              cursor: "pointer",
+            }}
+          >
             <input
               type="checkbox"
               checked={visibility.premetro}
@@ -609,7 +708,14 @@ export default function Map() {
             <span style={{ fontSize: "14px" }}>🚇 Premetro Tunnel</span>
           </label>
 
-          <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              cursor: "pointer",
+            }}
+          >
             <input
               type="checkbox"
               checked={visibility.gondola}
@@ -627,7 +733,14 @@ export default function Map() {
             <span style={{ fontSize: "14px" }}>🚡 Sava Skyway</span>
           </label>
 
-          <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              cursor: "pointer",
+            }}
+          >
             <input
               type="checkbox"
               checked={visibility.stations}
@@ -636,7 +749,14 @@ export default function Map() {
             <span style={{ fontSize: "14px" }}>📍 Stations</span>
           </label>
 
-          <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
+          <label
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              cursor: "pointer",
+            }}
+          >
             <input
               type="checkbox"
               checked={visibility.development}
@@ -659,10 +779,37 @@ export default function Map() {
             <strong style={{ color: "#9ca3af" }}>Legend:</strong>
           </p>
           <p style={{ margin: "0 0 4px 0" }}>⚪ Large = Interchange station</p>
-          <p style={{ margin: "0 0 4px 0" }}>🟣 Purple = Premetro (underground tram)</p>
+          <p style={{ margin: "0 0 4px 0" }}>
+            🟣 Purple = Premetro (underground tram)
+          </p>
           <p style={{ margin: "0 0 4px 0" }}>🟠 Orange = Gondola stations</p>
           <p style={{ margin: "0" }}>Click stations for details</p>
         </div>
+
+        <button
+          onClick={resetView}
+          style={{
+            marginTop: "16px",
+            width: "100%",
+            padding: "10px 16px",
+            background: "rgba(59, 130, 246, 0.8)",
+            border: "none",
+            borderRadius: "8px",
+            color: "white",
+            fontSize: "13px",
+            fontWeight: 500,
+            cursor: "pointer",
+            transition: "background 0.2s",
+          }}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.background = "rgba(59, 130, 246, 1)")
+          }
+          onMouseLeave={(e) =>
+            (e.currentTarget.style.background = "rgba(59, 130, 246, 0.8)")
+          }
+        >
+          🔄 Reset View
+        </button>
       </div>
 
       {/* Title overlay */}
