@@ -159,7 +159,7 @@ export function createGondolaLayer(
   let renderer: THREE.WebGLRenderer;
   let scene: THREE.Scene;
   let camera: THREE.Camera;
-  let cabins: THREE.Group[] = [];
+  const cabins: THREE.Group[] = [];
   let animationTime = 0;
 
   // Calculate model transform based on gondola line center

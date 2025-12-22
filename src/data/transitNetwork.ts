@@ -87,22 +87,55 @@ export const STATION_PODSUSED = { lng: 15.84, lat: 45.835 };
 export const STATION_IVANJA_REKA = { lng: 16.105, lat: 45.79 };
 export const STATION_ZITNJAK_JUG = { lng: 16.055, lat: 45.788 };
 export const STATION_ZAPRUDE = { lng: 16.01, lat: 45.79 };
-export const STATION_SAVA_CENTAR = { lng: 15.955, lat: 45.792 };
-export const STATION_JARUN = { lng: 15.925, lat: 45.784 };
+export const STATION_SAVA_CENTAR = {
+  lng: 15.963148136080587,
+  lat: 45.78547110969755,
+};
+export const STATION_JARUN = { lng: 15.924836076619604, lat: 45.7791467562842 };
 export const STATION_PRECKO = { lng: 15.89, lat: 45.783 };
 export const STATION_JANKOMIR = { lng: 15.849, lat: 45.789 };
 
 // Premetro & Center
-export const STATION_BRITANSKI_TRG = { lng: 15.952, lat: 45.814 };
-export const STATION_FRANKOPANSKA = { lng: 15.965, lat: 45.813 };
+export const STATION_SVETI_DUH = {
+  lng: 15.942084381100686,
+  lat: 45.81345255456036,
+};
+export const STATION_SLOVENSKA = {
+  lng: 15.95155792014553,
+  lat: 45.81245215504815,
+};
+export const STATION_TRG_FRANJO_TUDJMAN = {
+  lng: 15.956261656984662,
+  lat: 45.813094833415924,
+};
+export const STATION_BRITANSKI_TRG = {
+  lng: 15.964882294975398,
+  lat: 45.81279759969399,
+};
+export const STATION_FRANKOPANSKA = {
+  lng: 15.969594172030535,
+  lat: 45.81295532699301,
+};
 export const STATION_JELACIC = { lng: 15.977, lat: 45.813 };
 
 // Gondola & Extra
-export const STATION_JARUN_NORTH = { lng: 15.93, lat: 45.8 };
-export const STATION_SAVA_BEACH = { lng: 15.94, lat: 45.788 };
-export const STATION_MUSEUM_DISTRICT = { lng: 15.97, lat: 45.79 };
-export const STATION_BUNDEK = { lng: 15.98, lat: 45.789 };
-export const STATION_NOVI_ZAGREB_HUB = { lng: 16.0, lat: 45.788 };
+export const STATION_JARUN_NORTH = {
+  lng: 15.918408648979602,
+  lat: 45.786333823698136,
+};
+export const STATION_SAVA_BEACH = {
+  lng: 15.946221828657468,
+  lat: 45.781019398391265,
+};
+export const STATION_MUSEUM_DISTRICT = {
+  lng: 15.982912519059154,
+  lat: 45.77935915513046,
+};
+export const STATION_BUNDEK = {
+  lng: 15.985509730506863,
+  lat: 45.78628814538623,
+};
+export const STATION_NOVI_ZAGREB_HUB = { lng: 15.978, lat: 45.795 };
 
 // ============================================
 // PREMETRO (Underground Tram) - Central Tunnel
@@ -120,6 +153,9 @@ export const premetroTunnel = {
     type: "LineString" as const,
     coordinates: [
       [STATION_CRNOMEREC.lng, STATION_CRNOMEREC.lat], // Črnomerec (western portal)
+      [STATION_SVETI_DUH.lng, STATION_SVETI_DUH.lat],
+      [STATION_SLOVENSKA.lng, STATION_SLOVENSKA.lat],
+      [STATION_TRG_FRANJO_TUDJMAN.lng, STATION_TRG_FRANJO_TUDJMAN.lat],
       [STATION_BRITANSKI_TRG.lng, STATION_BRITANSKI_TRG.lat],
       [STATION_FRANKOPANSKA.lng, STATION_FRANKOPANSKA.lat],
       [STATION_JELACIC.lng, STATION_JELACIC.lat],
@@ -224,7 +260,6 @@ export const gondolaLine = {
   geometry: {
     type: "LineString" as const,
     coordinates: [
-      [STATION_CRNOMEREC.lng, STATION_CRNOMEREC.lat],
       [STATION_JARUN_NORTH.lng, STATION_JARUN_NORTH.lat],
       [STATION_JARUN.lng, STATION_JARUN.lat],
       [STATION_SAVA_BEACH.lng, STATION_SAVA_BEACH.lat],
@@ -515,6 +550,42 @@ export const premetroStations = {
     },
     {
       type: "Feature" as const,
+      properties: {
+        name: "Sveti Duh",
+        description: "Underground station",
+      },
+      geometry: {
+        type: "Point" as const,
+        coordinates: [STATION_SVETI_DUH.lng, STATION_SVETI_DUH.lat],
+      },
+    },
+    {
+      type: "Feature" as const,
+      properties: {
+        name: "Slovenska avenija",
+        description: "Underground station",
+      },
+      geometry: {
+        type: "Point" as const,
+        coordinates: [STATION_SLOVENSKA.lng, STATION_SLOVENSKA.lat],
+      },
+    },
+    {
+      type: "Feature" as const,
+      properties: {
+        name: "Trg Franje Tuđmana",
+        description: "Underground station",
+      },
+      geometry: {
+        type: "Point" as const,
+        coordinates: [
+          STATION_TRG_FRANJO_TUDJMAN.lng,
+          STATION_TRG_FRANJO_TUDJMAN.lat,
+        ],
+      },
+    },
+    {
+      type: "Feature" as const,
       properties: { name: "Britanski trg", description: "Underground station" },
       geometry: {
         type: "Point" as const,
@@ -532,7 +603,7 @@ export const premetroStations = {
     {
       type: "Feature" as const,
       properties: {
-        name: "Jelačić",
+        name: "Trg bana Jelačića",
         description: "Central hub",
         isMajor: true,
       },
@@ -572,17 +643,6 @@ export const premetroStations = {
 export const gondolaStations = {
   type: "FeatureCollection" as const,
   features: [
-    {
-      type: "Feature" as const,
-      properties: {
-        name: "Črnomerec Terminal",
-        description: "Metro Line B connection",
-      },
-      geometry: {
-        type: "Point" as const,
-        coordinates: [STATION_CRNOMEREC.lng, STATION_CRNOMEREC.lat],
-      },
-    },
     {
       type: "Feature" as const,
       properties: { name: "Jarun North", description: "Lake approach" },

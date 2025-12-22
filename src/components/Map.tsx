@@ -172,6 +172,25 @@ export default function Map() {
         },
       });
 
+      // Premetro station labels
+      m.addLayer({
+        id: "premetro-labels",
+        type: "symbol",
+        source: "premetro-stations",
+        layout: {
+          "text-field": ["get", "name"],
+          "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
+          "text-size": 11,
+          "text-offset": [0, 1.5],
+          "text-anchor": "top",
+        },
+        paint: {
+          "text-color": "#a78bfa",
+          "text-halo-color": "#1f2937",
+          "text-halo-width": 1.5,
+        },
+      });
+
       // Add Metro Line A
       m.addSource("metro-line-a", {
         type: "geojson",
@@ -330,6 +349,25 @@ export default function Map() {
         },
       });
 
+      // Gondola station labels
+      m.addLayer({
+        id: "gondola-labels",
+        type: "symbol",
+        source: "gondola-stations",
+        layout: {
+          "text-field": ["get", "name"],
+          "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
+          "text-size": 11,
+          "text-offset": [0, 1.5],
+          "text-anchor": "top",
+        },
+        paint: {
+          "text-color": "#fbbf24",
+          "text-halo-color": "#1f2937",
+          "text-halo-width": 1.5,
+        },
+      });
+
       // Station labels
       m.addLayer({
         id: "station-labels",
@@ -445,6 +483,46 @@ export default function Map() {
           .addTo(m);
       });
 
+      m.on("click", "premetro-portals", (e) => {
+        if (!e.features?.[0]?.properties) return;
+        const props = e.features[0].properties;
+        const coords = (e.features[0].geometry as GeoJSON.Point).coordinates;
+
+        new mapboxgl.Popup()
+          .setLngLat(coords as [number, number])
+          .setHTML(
+            `
+            <div style="color: #1f2937; padding: 4px;">
+              <strong>🚇 ${props.name || "Premetro Portal"}</strong><br/>
+              <span style="color: #6b7280;">${
+                props.description || "Portal station"
+              }</span>
+            </div>
+          `
+          )
+          .addTo(m);
+      });
+
+      m.on("click", "premetro-underground", (e) => {
+        if (!e.features?.[0]?.properties) return;
+        const props = e.features[0].properties;
+        const coords = (e.features[0].geometry as GeoJSON.Point).coordinates;
+
+        new mapboxgl.Popup()
+          .setLngLat(coords as [number, number])
+          .setHTML(
+            `
+            <div style="color: #1f2937; padding: 4px;">
+              <strong>🚇 ${props.name || "Premetro Station"}</strong><br/>
+              <span style="color: #6b7280;">${
+                props.description || "Underground station"
+              }</span>
+            </div>
+          `
+          )
+          .addTo(m);
+      });
+
       // Change cursor on hover
       m.on("mouseenter", "metro-stations-regular", () => {
         m.getCanvas().style.cursor = "pointer";
@@ -462,6 +540,18 @@ export default function Map() {
         m.getCanvas().style.cursor = "pointer";
       });
       m.on("mouseleave", "gondola-stations", () => {
+        m.getCanvas().style.cursor = "";
+      });
+      m.on("mouseenter", "premetro-portals", () => {
+        m.getCanvas().style.cursor = "pointer";
+      });
+      m.on("mouseleave", "premetro-portals", () => {
+        m.getCanvas().style.cursor = "";
+      });
+      m.on("mouseenter", "premetro-underground", () => {
+        m.getCanvas().style.cursor = "pointer";
+      });
+      m.on("mouseleave", "premetro-underground", () => {
         m.getCanvas().style.cursor = "";
       });
 
@@ -498,10 +588,12 @@ export default function Map() {
     setVis("gondola-line", visibility.gondola);
     setVis("gondola-3d", visibility.gondola);
     setVis("gondola-stations", visibility.gondola);
+    setVis("gondola-labels", visibility.gondola);
     setVis("premetro-tunnel", visibility.premetro);
     setVis("premetro-tunnel-animated", visibility.premetro);
     setVis("premetro-portals", visibility.premetro);
     setVis("premetro-underground", visibility.premetro);
+    setVis("premetro-labels", visibility.premetro);
     setVis("development-zones-fill", visibility.development);
     setVis("development-zones-outline", visibility.development);
 
@@ -513,6 +605,7 @@ export default function Map() {
     if (visibility.metroC) visibleLines.push("C");
 
     // Create filter: show station if any of its lines is in the visible lines list
+    // We check if the line letter appears in the stringified lines array
     // For interchange stations, they stay visible as long as at least one of their lines is visible
     const stationFilter: mapboxgl.FilterSpecification =
       visibleLines.length > 0
@@ -522,7 +615,7 @@ export default function Map() {
               (line): mapboxgl.ExpressionSpecification => [
                 "in",
                 line,
-                ["get", "lines"],
+                ["to-string", ["get", "lines"]],
               ]
             ),
           ]
