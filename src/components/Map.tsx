@@ -35,8 +35,8 @@ export default function Map() {
   const [loaded, setLoaded] = useState(false);
   const [visibility, setVisibility] = useState<LayerVisibility>({
     metroA: true,
-    metroB: true,
-    metroC: true,
+    metroB: false,
+    metroC: false,
     premetro: true,
     gondola: true,
     stations: true,
@@ -712,7 +712,10 @@ export default function Map() {
             <input
               type="checkbox"
               checked={visibility.metroA}
-              onChange={() => toggleLayer("metroA")}
+              onChange={() => {
+                toggleLayer("metroA");
+                toggleLayer("stations");
+              }}
               style={{ accentColor: "#2563eb" }}
             />
             <span
@@ -725,7 +728,7 @@ export default function Map() {
             />
             <span style={{ fontSize: "14px" }}>Metro Line A</span>
           </label>
-
+          {/* 
           <label
             style={{
               display: "flex",
@@ -774,7 +777,7 @@ export default function Map() {
               }}
             />
             <span style={{ fontSize: "14px" }}>Metro Line C</span>
-          </label>
+          </label> */}
 
           <label
             style={{
