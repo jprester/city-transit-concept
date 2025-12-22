@@ -53,7 +53,10 @@ export const STATION_KVATERNIKOV_TRG = {
   lat: 45.814913416262755,
 };
 export const STATION_GLAVNI_KOLODVOR = { lng: 15.979, lat: 45.805 };
-export const STATION_SAVSKI_MOST = { lng: 15.978, lat: 45.795 };
+export const STATION_SAVSKI_MOST = {
+  lng: 15.979295264737873,
+  lat: 45.79520327807365,
+};
 export const STATION_SOPOT = {
   lng: 15.985381979967977,
   lat: 45.77562261296876,
@@ -74,26 +77,47 @@ export const STATION_VELIKA_GORICA = { lng: 16.075, lat: 45.714 };
 export const STATION_ZITNJAK = { lng: 16.055, lat: 45.803 };
 export const STATION_PESCENICA = { lng: 16.03, lat: 45.808 };
 export const STATION_BORONGAJ = {
-  lng: 16.025212475197712,
-  lat: 45.813482934272,
+  lng: 16.018887074647456,
+  lat: 45.8146922960263,
 };
-export const STATION_TEHNICKI_MUZEJ = { lng: 15.96, lat: 45.808 };
-export const STATION_SPANSKO = { lng: 15.91, lat: 45.815 };
-export const STATION_VRAPCE = { lng: 15.885, lat: 45.815 };
+export const STATION_TEHNICKI_MUZEJ = {
+  lng: 15.963521681100124,
+  lat: 45.80341005868913,
+};
+
+export const STATION_VRAPCE = {
+  lng: 15.895761639086736,
+  lat: 45.81204330161218,
+};
 export const STATION_GORNJE_VRAPCE = { lng: 15.86, lat: 45.825 };
-export const STATION_PODSUSED = { lng: 15.84, lat: 45.835 };
+export const STATION_PODSUSED = {
+  lng: 15.835858060867077,
+  lat: 45.81557583531247,
+};
 
 // Line C
-export const STATION_IVANJA_REKA = { lng: 16.105, lat: 45.79 };
-export const STATION_ZITNJAK_JUG = { lng: 16.055, lat: 45.788 };
-export const STATION_ZAPRUDE = { lng: 16.01, lat: 45.79 };
+export const STATION_IVANJA_REKA = {
+  lng: 16.11363944779256,
+  lat: 45.80022538415935,
+};
+export const STATION_ZITNJAK_JUG = {
+  lng: 16.06030849783343,
+  lat: 45.78306437797784,
+};
+export const STATION_BOROVJE = {
+  lng: 16.007231333258012,
+  lat: 45.78742138264455,
+};
 export const STATION_SAVA_CENTAR = {
   lng: 15.963148136080587,
   lat: 45.78547110969755,
 };
 export const STATION_JARUN = { lng: 15.924836076619604, lat: 45.7791467562842 };
 export const STATION_PRECKO = { lng: 15.89, lat: 45.783 };
-export const STATION_JANKOMIR = { lng: 15.849, lat: 45.789 };
+export const STATION_JANKOMIR = {
+  lng: 15.858285555749031,
+  lat: 45.80502426229535,
+};
 
 // Premetro & Center
 export const STATION_SVETI_DUH = {
@@ -135,7 +159,10 @@ export const STATION_BUNDEK = {
   lng: 15.985509730506863,
   lat: 45.78628814538623,
 };
-export const STATION_NOVI_ZAGREB_HUB = { lng: 15.978, lat: 45.795 };
+export const STATION_NOVI_ZAGREB_HUB = {
+  lng: 15.979295264737873,
+  lat: 45.79520327807365,
+};
 
 // ============================================
 // PREMETRO (Underground Tram) - Central Tunnel
@@ -215,7 +242,6 @@ export const metroLineB = {
       [STATION_GLAVNI_KOLODVOR.lng, STATION_GLAVNI_KOLODVOR.lat],
       [STATION_TEHNICKI_MUZEJ.lng, STATION_TEHNICKI_MUZEJ.lat],
       [STATION_CRNOMEREC.lng, STATION_CRNOMEREC.lat],
-      [STATION_SPANSKO.lng, STATION_SPANSKO.lat],
       [STATION_VRAPCE.lng, STATION_VRAPCE.lat],
       [STATION_GORNJE_VRAPCE.lng, STATION_GORNJE_VRAPCE.lat],
       [STATION_PODSUSED.lng, STATION_PODSUSED.lat],
@@ -236,7 +262,7 @@ export const metroLineC = {
     coordinates: [
       [STATION_IVANJA_REKA.lng, STATION_IVANJA_REKA.lat],
       [STATION_ZITNJAK_JUG.lng, STATION_ZITNJAK_JUG.lat],
-      [STATION_ZAPRUDE.lng, STATION_ZAPRUDE.lat],
+      [STATION_BOROVJE.lng, STATION_BOROVJE.lat],
       [STATION_GLAVNI_KOLODVOR.lng, STATION_GLAVNI_KOLODVOR.lat],
       [STATION_SAVA_CENTAR.lng, STATION_SAVA_CENTAR.lat],
       [STATION_JARUN.lng, STATION_JARUN.lat],
@@ -441,14 +467,6 @@ export const metroStations = {
     },
     {
       type: "Feature" as const,
-      properties: { name: "Špansko", lines: ["B"] },
-      geometry: {
-        type: "Point" as const,
-        coordinates: [STATION_SPANSKO.lng, STATION_SPANSKO.lat],
-      },
-    },
-    {
-      type: "Feature" as const,
       properties: { name: "Vrapče", lines: ["B"] },
       geometry: {
         type: "Point" as const,
@@ -491,10 +509,10 @@ export const metroStations = {
     },
     {
       type: "Feature" as const,
-      properties: { name: "Zapruđe", lines: ["C"] },
+      properties: { name: "Borovje", lines: ["C"] },
       geometry: {
         type: "Point" as const,
-        coordinates: [STATION_ZAPRUDE.lng, STATION_ZAPRUDE.lat],
+        coordinates: [STATION_BOROVJE.lng, STATION_BOROVJE.lat],
       },
     },
     {
