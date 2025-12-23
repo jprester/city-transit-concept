@@ -4,9 +4,6 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import "./Map.css";
 
 import {
-  metroLineA,
-  metroLineB,
-  metroLineC,
   gondolaLine,
   metroStations,
   gondolaStations,
@@ -16,6 +13,13 @@ import {
   STATION_GLAVNI_KOLODVOR,
   transitPlans,
   getActiveElements,
+  getActiveSegments,
+  getActiveStationNames,
+  metroASegments,
+  metroBSegments,
+  metroCSegments,
+  premetroSegments,
+  gondolaSegments,
   type PlanType,
 } from "../data/transitNetwork";
 import { createGondolaLayer } from "../layers/GondolaLayer";
@@ -61,6 +65,62 @@ export default function Map() {
   );
 
   const currentPlan = transitPlans[selectedPlan];
+
+  // Helper function to add a line segment to the map
+  const addSegmentToMap = (
+    map: mapboxgl.Map,
+    segmentId: string,
+    coordinates: number[][],
+    color: string,
+    isAnimated = true
+  ) => {
+    const sourceId = `segment-${segmentId}`;
+    const layerId = `layer-${segmentId}`;
+    const animatedLayerId = `layer-${segmentId}-animated`;
+
+    map.addSource(sourceId, {
+      type: "geojson",
+      data: {
+        type: "Feature",
+        properties: {},
+        geometry: {
+          type: "LineString",
+          coordinates,
+        },
+      },
+    });
+
+    map.addLayer({
+      id: layerId,
+      type: "line",
+      source: sourceId,
+      paint: {
+        "line-color": color,
+        "line-width": 4,
+        "line-opacity": 0.9,
+      },
+      layout: {
+        visibility: "none",
+      },
+    });
+
+    if (isAnimated) {
+      map.addLayer({
+        id: animatedLayerId,
+        type: "line",
+        source: sourceId,
+        paint: {
+          "line-color": "#ffffff",
+          "line-width": 2,
+          "line-dasharray": [0, 4, 3],
+          "line-opacity": 0.6,
+        },
+        layout: {
+          visibility: "none",
+        },
+      });
+    }
+  };
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -127,37 +187,7 @@ export default function Map() {
         },
       });
 
-      // Add Premetro Tunnel
-      m.addSource("premetro-tunnel", {
-        type: "geojson",
-        data: premetroTunnel,
-      });
-
-      m.addLayer({
-        id: "premetro-tunnel",
-        type: "line",
-        source: "premetro-tunnel",
-        paint: {
-          "line-color": premetroTunnel.properties.color,
-          "line-width": 6,
-          "line-opacity": 0.9,
-        },
-      });
-
-      // Animated dash for premetro
-      m.addLayer({
-        id: "premetro-tunnel-animated",
-        type: "line",
-        source: "premetro-tunnel",
-        paint: {
-          "line-color": "#ffffff",
-          "line-width": 2,
-          "line-dasharray": [2, 4],
-          "line-opacity": 0.5,
-        },
-      });
-
-      // Premetro stations
+      // Premetro stations (line segments are added later as part of the segment system)
       m.addSource("premetro-stations", {
         type: "geojson",
         data: premetroStations,
@@ -210,110 +240,29 @@ export default function Map() {
         },
       });
 
-      // Add Metro Line A
-      m.addSource("metro-line-a", {
-        type: "geojson",
-        data: metroLineA,
+      // Add Metro Line A Segments
+      Object.values(metroASegments).forEach((segment) => {
+        addSegmentToMap(m, segment.id, segment.coordinates, "#2563eb");
       });
 
-      m.addLayer({
-        id: "metro-line-a",
-        type: "line",
-        source: "metro-line-a",
-        paint: {
-          "line-color": metroLineA.properties.color,
-          "line-width": 4,
-          "line-opacity": 0.9,
-        },
+      // Add Metro Line B Segments
+      Object.values(metroBSegments).forEach((segment) => {
+        addSegmentToMap(m, segment.id, segment.coordinates, "#dc2626");
       });
 
-      // Animated dash effect for Metro A
-      m.addLayer({
-        id: "metro-line-a-animated",
-        type: "line",
-        source: "metro-line-a",
-        paint: {
-          "line-color": "#ffffff",
-          "line-width": 2,
-          "line-dasharray": [0, 4, 3],
-          "line-opacity": 0.6,
-        },
+      // Add Metro Line C Segments
+      Object.values(metroCSegments).forEach((segment) => {
+        addSegmentToMap(m, segment.id, segment.coordinates, "#16a34a");
       });
 
-      // Add Metro Line B
-      m.addSource("metro-line-b", {
-        type: "geojson",
-        data: metroLineB,
+      // Add Premetro Segments
+      Object.values(premetroSegments).forEach((segment) => {
+        addSegmentToMap(m, segment.id, segment.coordinates, "#8b5cf6");
       });
 
-      m.addLayer({
-        id: "metro-line-b",
-        type: "line",
-        source: "metro-line-b",
-        paint: {
-          "line-color": metroLineB.properties.color,
-          "line-width": 4,
-          "line-opacity": 0.9,
-        },
-      });
-
-      m.addLayer({
-        id: "metro-line-b-animated",
-        type: "line",
-        source: "metro-line-b",
-        paint: {
-          "line-color": "#ffffff",
-          "line-width": 2,
-          "line-dasharray": [0, 4, 3],
-          "line-opacity": 0.6,
-        },
-      });
-
-      // Add Metro Line C
-      m.addSource("metro-line-c", {
-        type: "geojson",
-        data: metroLineC,
-      });
-
-      m.addLayer({
-        id: "metro-line-c",
-        type: "line",
-        source: "metro-line-c",
-        paint: {
-          "line-color": metroLineC.properties.color,
-          "line-width": 4,
-          "line-opacity": 0.9,
-        },
-      });
-
-      m.addLayer({
-        id: "metro-line-c-animated",
-        type: "line",
-        source: "metro-line-c",
-        paint: {
-          "line-color": "#ffffff",
-          "line-width": 2,
-          "line-dasharray": [0, 4, 3],
-          "line-opacity": 0.6,
-        },
-      });
-
-      // Add Gondola Line (2D representation)
-      m.addSource("gondola-line", {
-        type: "geojson",
-        data: gondolaLine,
-      });
-
-      m.addLayer({
-        id: "gondola-line",
-        type: "line",
-        source: "gondola-line",
-        paint: {
-          "line-color": gondolaLine.properties.color,
-          "line-width": 3,
-          "line-dasharray": [4, 2],
-          "line-opacity": 0.8,
-        },
+      // Add Gondola Segments
+      Object.values(gondolaSegments).forEach((segment) => {
+        addSegmentToMap(m, segment.id, segment.coordinates, "#f59e0b", false);
       });
 
       // Add Metro Stations
@@ -588,57 +537,7 @@ export default function Map() {
     if (map.current && loaded) {
       const m = map.current;
 
-      // Metro A opacity
-      const metroAOpacity = activeElements.metroA === "partial" ? 0.5 : 0.9;
-      if (m.getLayer("metro-line-a")) {
-        m.setPaintProperty("metro-line-a", "line-opacity", metroAOpacity);
-        m.setPaintProperty(
-          "metro-line-a-animated",
-          "line-opacity",
-          activeElements.metroA === "partial" ? 0.3 : 0.6
-        );
-      }
-
-      // Metro B opacity
-      const metroBOpacity = activeElements.metroB === "partial" ? 0.5 : 0.9;
-      if (m.getLayer("metro-line-b")) {
-        m.setPaintProperty("metro-line-b", "line-opacity", metroBOpacity);
-        m.setPaintProperty(
-          "metro-line-b-animated",
-          "line-opacity",
-          activeElements.metroB === "partial" ? 0.3 : 0.6
-        );
-      }
-
-      // Metro C opacity
-      const metroCOpacity = activeElements.metroC === "partial" ? 0.5 : 0.9;
-      if (m.getLayer("metro-line-c")) {
-        m.setPaintProperty("metro-line-c", "line-opacity", metroCOpacity);
-        m.setPaintProperty(
-          "metro-line-c-animated",
-          "line-opacity",
-          activeElements.metroC === "partial" ? 0.3 : 0.6
-        );
-      }
-
-      // Premetro opacity
-      const premetroOpacity = activeElements.premetro === "partial" ? 0.5 : 0.9;
-      if (m.getLayer("premetro-tunnel")) {
-        m.setPaintProperty("premetro-tunnel", "line-opacity", premetroOpacity);
-        m.setPaintProperty(
-          "premetro-tunnel-animated",
-          "line-opacity",
-          activeElements.premetro === "partial" ? 0.25 : 0.5
-        );
-      }
-
-      // Gondola opacity
-      const gondolaOpacity = activeElements.gondola === "partial" ? 0.4 : 0.8;
-      if (m.getLayer("gondola-line")) {
-        m.setPaintProperty("gondola-line", "line-opacity", gondolaOpacity);
-      }
-
-      // Development zones opacity
+      // Development zones opacity (only thing that still uses opacity for partial state)
       const devOpacity = activeElements.development === "partial" ? 0.15 : 0.25;
       if (m.getLayer("development-zones-fill")) {
         m.setPaintProperty(
@@ -650,7 +549,7 @@ export default function Map() {
     }
   }, [activeElements, loaded]);
 
-  // Handle visibility changes
+  // Handle segment visibility based on timeline
   useEffect(() => {
     if (!map.current || !loaded) return;
     const m = map.current;
@@ -665,49 +564,67 @@ export default function Map() {
       }
     };
 
-    setVis("metro-line-a", visibility.metroA);
-    setVis("metro-line-a-animated", visibility.metroA);
-    setVis("metro-line-b", visibility.metroB);
-    setVis("metro-line-b-animated", visibility.metroB);
-    setVis("metro-line-c", visibility.metroC);
-    setVis("metro-line-c-animated", visibility.metroC);
-    setVis("gondola-line", visibility.gondola);
+    // Get active segments for current timeline
+    const activeSegments = getActiveSegments(selectedYear, selectedPlan);
+
+    // Metro A segments
+    Object.keys(metroASegments).forEach((segmentId) => {
+      const isActive = activeSegments?.metroA?.includes(segmentId) || false;
+      setVis(`layer-${segmentId}`, isActive);
+      setVis(`layer-${segmentId}-animated`, isActive);
+    });
+
+    // Metro B segments
+    Object.keys(metroBSegments).forEach((segmentId) => {
+      const isActive = activeSegments?.metroB?.includes(segmentId) || false;
+      setVis(`layer-${segmentId}`, isActive);
+      setVis(`layer-${segmentId}-animated`, isActive);
+    });
+
+    // Metro C segments
+    Object.keys(metroCSegments).forEach((segmentId) => {
+      const isActive = activeSegments?.metroC?.includes(segmentId) || false;
+      setVis(`layer-${segmentId}`, isActive);
+      setVis(`layer-${segmentId}-animated`, isActive);
+    });
+
+    // Premetro segments
+    Object.keys(premetroSegments).forEach((segmentId) => {
+      const isActive = activeSegments?.premetro?.includes(segmentId) || false;
+      setVis(`layer-${segmentId}`, isActive);
+      setVis(`layer-${segmentId}-animated`, isActive);
+    });
+
+    // Gondola segments
+    Object.keys(gondolaSegments).forEach((segmentId) => {
+      const isActive = activeSegments?.gondola?.includes(segmentId) || false;
+      setVis(`layer-${segmentId}`, isActive);
+    });
+
+    // Other layers (gondola 3D, stations, development zones)
     setVis("gondola-3d", visibility.gondola);
     setVis("gondola-stations", visibility.gondola);
     setVis("gondola-labels", visibility.gondola);
-    setVis("premetro-tunnel", visibility.premetro);
-    setVis("premetro-tunnel-animated", visibility.premetro);
     setVis("premetro-portals", visibility.premetro);
     setVis("premetro-underground", visibility.premetro);
     setVis("premetro-labels", visibility.premetro);
     setVis("development-zones-fill", visibility.development);
     setVis("development-zones-outline", visibility.development);
 
-    // Build filter for metro stations based on visible lines
-    // Stations should show if any of their lines are currently visible
-    const visibleLines: string[] = [];
-    if (visibility.metroA) visibleLines.push("A");
-    if (visibility.metroB) visibleLines.push("B");
-    if (visibility.metroC) visibleLines.push("C");
+    // Build filter for metro stations based on active segments
+    // Only show stations that are part of currently active segments
+    const activeStationNames = getActiveStationNames(
+      selectedYear,
+      selectedPlan
+    );
 
-    // Create filter: show station if any of its lines is in the visible lines list
-    // We check if the line letter appears in the stringified lines array
-    // For interchange stations, they stay visible as long as at least one of their lines is visible
+    // Create filter: show station if its name is in the active stations list
     const stationFilter: mapboxgl.FilterSpecification =
-      visibleLines.length > 0
-        ? [
-            "any",
-            ...visibleLines.map(
-              (line): mapboxgl.ExpressionSpecification => [
-                "in",
-                line,
-                ["to-string", ["get", "lines"]],
-              ]
-            ),
-          ]
-        : ["==", "1", "0"]; // Always false filter when no lines visible
+      activeStationNames.length > 0
+        ? ["in", ["get", "name"], ["literal", activeStationNames]]
+        : ["==", "1", "0"]; // Always false filter when no stations active
 
-    // Apply filters and visibility to station layers
+    // Apply filters and visibility to metro station layers
     if (m.getLayer("metro-stations-regular")) {
       m.setLayoutProperty(
         "metro-stations-regular",
@@ -742,7 +659,54 @@ export default function Map() {
       );
       m.setFilter("station-labels", stationFilter);
     }
-  }, [visibility, loaded]);
+
+    // Apply same logic to premetro stations
+    if (m.getLayer("premetro-portals")) {
+      m.setLayoutProperty(
+        "premetro-portals",
+        "visibility",
+        visibility.premetro ? "visible" : "none"
+      );
+      m.setFilter("premetro-portals", stationFilter);
+    }
+
+    if (m.getLayer("premetro-underground")) {
+      m.setLayoutProperty(
+        "premetro-underground",
+        "visibility",
+        visibility.premetro ? "visible" : "none"
+      );
+      m.setFilter("premetro-underground", stationFilter);
+    }
+
+    if (m.getLayer("premetro-labels")) {
+      m.setLayoutProperty(
+        "premetro-labels",
+        "visibility",
+        visibility.premetro ? "visible" : "none"
+      );
+      m.setFilter("premetro-labels", stationFilter);
+    }
+
+    // Apply same logic to gondola stations
+    if (m.getLayer("gondola-stations")) {
+      m.setLayoutProperty(
+        "gondola-stations",
+        "visibility",
+        visibility.gondola ? "visible" : "none"
+      );
+      m.setFilter("gondola-stations", stationFilter);
+    }
+
+    if (m.getLayer("gondola-labels")) {
+      m.setLayoutProperty(
+        "gondola-labels",
+        "visibility",
+        visibility.gondola ? "visible" : "none"
+      );
+      m.setFilter("gondola-labels", stationFilter);
+    }
+  }, [visibility, loaded, selectedYear, selectedPlan]);
 
   const resetView = () => {
     if (!map.current) return;
