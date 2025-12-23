@@ -825,3 +825,225 @@ export const allMetroLines = {
   type: "FeatureCollection" as const,
   features: [metroLineA, metroLineB, metroLineC],
 };
+
+// ============================================
+// TIMELINE - Construction Phases
+// ============================================
+
+export interface TimelinePhase {
+  year: number;
+  label: string;
+  description: string;
+  elements: {
+    premetro?: "none" | "partial" | "full";
+    metroA?: "none" | "partial" | "full";
+    metroB?: "none" | "partial" | "full";
+    metroC?: "none" | "partial" | "full";
+    gondola?: "none" | "partial" | "full";
+    development?: "none" | "partial" | "full";
+  };
+}
+
+export type PlanType = "realistic" | "ambitious";
+
+export interface TransitPlan {
+  id: PlanType;
+  name: string;
+  description: string;
+  cost: string;
+  timeline: TimelinePhase[];
+}
+
+// Realistic Plan: Premetro + Metro A + Gondola + Development (€3-4.5B)
+const realisticPlan: TransitPlan = {
+  id: "realistic",
+  name: "Realistic Plan",
+  description: "Achievable hybrid system - Premetro, one metro line, gondola",
+  cost: "€3-4.5 billion over 20 years",
+  timeline: [
+    {
+      year: 2025,
+      label: "Present",
+      description: "Planning phase - Initial designs underway",
+      elements: {
+        premetro: "none",
+        metroA: "none",
+        metroB: "none",
+        metroC: "none",
+        gondola: "none",
+        development: "none",
+      },
+    },
+    {
+      year: 2030,
+      label: "Early Phase",
+      description: "Premetro tunnel construction begins",
+      elements: {
+        premetro: "partial",
+        metroA: "none",
+        metroB: "none",
+        metroC: "none",
+        gondola: "none",
+        development: "partial",
+      },
+    },
+    {
+      year: 2035,
+      label: "Mid Phase",
+      description: "Premetro operational, Metro A planning",
+      elements: {
+        premetro: "full",
+        metroA: "partial",
+        metroB: "none",
+        metroC: "none",
+        gondola: "partial",
+        development: "partial",
+      },
+    },
+    {
+      year: 2040,
+      label: "Advanced",
+      description: "Metro A opens, Gondola operational",
+      elements: {
+        premetro: "full",
+        metroA: "full",
+        metroB: "none",
+        metroC: "none",
+        gondola: "full",
+        development: "partial",
+      },
+    },
+    {
+      year: 2045,
+      label: "Mature",
+      description: "Surface improvements, development zones active",
+      elements: {
+        premetro: "full",
+        metroA: "full",
+        metroB: "none",
+        metroC: "none",
+        gondola: "full",
+        development: "full",
+      },
+    },
+    {
+      year: 2050,
+      label: "Complete",
+      description: "Integrated hybrid transit network operational",
+      elements: {
+        premetro: "full",
+        metroA: "full",
+        metroB: "none",
+        metroC: "none",
+        gondola: "full",
+        development: "full",
+      },
+    },
+  ],
+};
+
+// Ambitious Plan: Full 3-line Metro + Premetro + Gondola (€8-12B)
+const ambitiousPlan: TransitPlan = {
+  id: "ambitious",
+  name: "Ambitious Plan",
+  description: "Comprehensive metro network with three full lines",
+  cost: "€8-12 billion over 25 years",
+  timeline: [
+    {
+      year: 2025,
+      label: "Present",
+      description: "Planning phase - Comprehensive network design",
+      elements: {
+        premetro: "none",
+        metroA: "none",
+        metroB: "none",
+        metroC: "none",
+        gondola: "none",
+        development: "none",
+      },
+    },
+    {
+      year: 2030,
+      label: "Phase 1",
+      description: "Premetro + Metro A construction begins",
+      elements: {
+        premetro: "partial",
+        metroA: "partial",
+        metroB: "none",
+        metroC: "none",
+        gondola: "none",
+        development: "partial",
+      },
+    },
+    {
+      year: 2035,
+      label: "Phase 2",
+      description: "Metro A operational, Line B starts",
+      elements: {
+        premetro: "full",
+        metroA: "full",
+        metroB: "partial",
+        metroC: "none",
+        gondola: "partial",
+        development: "partial",
+      },
+    },
+    {
+      year: 2040,
+      label: "Phase 3",
+      description: "Two metro lines + gondola operational",
+      elements: {
+        premetro: "full",
+        metroA: "full",
+        metroB: "full",
+        metroC: "none",
+        gondola: "full",
+        development: "partial",
+      },
+    },
+    {
+      year: 2045,
+      label: "Phase 4",
+      description: "Metro Line C construction underway",
+      elements: {
+        premetro: "full",
+        metroA: "full",
+        metroB: "full",
+        metroC: "partial",
+        gondola: "full",
+        development: "full",
+      },
+    },
+    {
+      year: 2050,
+      label: "Complete",
+      description: "Full 3-line metro network operational",
+      elements: {
+        premetro: "full",
+        metroA: "full",
+        metroB: "full",
+        metroC: "full",
+        gondola: "full",
+        development: "full",
+      },
+    },
+  ],
+};
+
+export const transitPlans: Record<PlanType, TransitPlan> = {
+  realistic: realisticPlan,
+  ambitious: ambitiousPlan,
+};
+
+// Legacy export for backwards compatibility
+export const timelinePhases = realisticPlan.timeline;
+
+// Get the active elements for a given year and plan
+export function getActiveElements(
+  year: number,
+  planType: PlanType = "realistic"
+): TimelinePhase["elements"] {
+  const plan = transitPlans[planType];
+  const phase = [...plan.timeline].reverse().find((p) => p.year <= year);
+  return phase?.elements || plan.timeline[0].elements;
+}

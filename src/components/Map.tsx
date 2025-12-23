@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import "./Map.css";
 
 import {
   metroLineA,
@@ -13,6 +14,9 @@ import {
   premetroTunnel,
   premetroStations,
   STATION_GLAVNI_KOLODVOR,
+  transitPlans,
+  getActiveElements,
+  type PlanType,
 } from "../data/transitNetwork";
 import { createGondolaLayer } from "../layers/GondolaLayer";
 
@@ -33,15 +37,30 @@ export default function Map() {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [loaded, setLoaded] = useState(false);
-  const [visibility, setVisibility] = useState<LayerVisibility>({
-    metroA: true,
-    metroB: false,
-    metroC: false,
-    premetro: true,
-    gondola: true,
-    stations: true,
-    development: true,
-  });
+  const [selectedPlan, setSelectedPlan] = useState<PlanType>("realistic");
+  const [selectedYear, setSelectedYear] = useState(2050); // Default to showing everything
+  // Get current construction phase for active elements
+  const activeElements = useMemo(
+    () => getActiveElements(selectedYear, selectedPlan),
+    [selectedYear, selectedPlan]
+  );
+  const visibility = useMemo<LayerVisibility>(
+    () => ({
+      metroA: activeElements.metroA !== "none",
+      metroB: activeElements.metroB !== "none",
+      metroC: activeElements.metroC !== "none",
+      premetro: activeElements.premetro !== "none",
+      gondola: activeElements.gondola !== "none",
+      stations:
+        activeElements.metroA !== "none" ||
+        activeElements.metroB !== "none" ||
+        activeElements.metroC !== "none",
+      development: activeElements.development !== "none",
+    }),
+    [activeElements]
+  );
+
+  const currentPlan = transitPlans[selectedPlan];
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -564,6 +583,73 @@ export default function Map() {
     };
   }, []);
 
+  // Update layer opacity based on construction phase
+  useEffect(() => {
+    if (map.current && loaded) {
+      const m = map.current;
+
+      // Metro A opacity
+      const metroAOpacity = activeElements.metroA === "partial" ? 0.5 : 0.9;
+      if (m.getLayer("metro-line-a")) {
+        m.setPaintProperty("metro-line-a", "line-opacity", metroAOpacity);
+        m.setPaintProperty(
+          "metro-line-a-animated",
+          "line-opacity",
+          activeElements.metroA === "partial" ? 0.3 : 0.6
+        );
+      }
+
+      // Metro B opacity
+      const metroBOpacity = activeElements.metroB === "partial" ? 0.5 : 0.9;
+      if (m.getLayer("metro-line-b")) {
+        m.setPaintProperty("metro-line-b", "line-opacity", metroBOpacity);
+        m.setPaintProperty(
+          "metro-line-b-animated",
+          "line-opacity",
+          activeElements.metroB === "partial" ? 0.3 : 0.6
+        );
+      }
+
+      // Metro C opacity
+      const metroCOpacity = activeElements.metroC === "partial" ? 0.5 : 0.9;
+      if (m.getLayer("metro-line-c")) {
+        m.setPaintProperty("metro-line-c", "line-opacity", metroCOpacity);
+        m.setPaintProperty(
+          "metro-line-c-animated",
+          "line-opacity",
+          activeElements.metroC === "partial" ? 0.3 : 0.6
+        );
+      }
+
+      // Premetro opacity
+      const premetroOpacity = activeElements.premetro === "partial" ? 0.5 : 0.9;
+      if (m.getLayer("premetro-tunnel")) {
+        m.setPaintProperty("premetro-tunnel", "line-opacity", premetroOpacity);
+        m.setPaintProperty(
+          "premetro-tunnel-animated",
+          "line-opacity",
+          activeElements.premetro === "partial" ? 0.25 : 0.5
+        );
+      }
+
+      // Gondola opacity
+      const gondolaOpacity = activeElements.gondola === "partial" ? 0.4 : 0.8;
+      if (m.getLayer("gondola-line")) {
+        m.setPaintProperty("gondola-line", "line-opacity", gondolaOpacity);
+      }
+
+      // Development zones opacity
+      const devOpacity = activeElements.development === "partial" ? 0.15 : 0.25;
+      if (m.getLayer("development-zones-fill")) {
+        m.setPaintProperty(
+          "development-zones-fill",
+          "fill-opacity",
+          devOpacity
+        );
+      }
+    }
+  }, [activeElements, loaded]);
+
   // Handle visibility changes
   useEffect(() => {
     if (!map.current || !loaded) return;
@@ -658,10 +744,6 @@ export default function Map() {
     }
   }, [visibility, loaded]);
 
-  const toggleLayer = (layer: keyof LayerVisibility) => {
-    setVisibility((prev) => ({ ...prev, [layer]: !prev[layer] }));
-  };
-
   const resetView = () => {
     if (!map.current) return;
     map.current.flyTo({
@@ -674,272 +756,281 @@ export default function Map() {
   };
 
   return (
-    <div style={{ width: "100%", height: "100vh", position: "relative" }}>
-      <div ref={mapContainer} style={{ width: "100%", height: "100%" }} />
+    <div className="map-container">
+      <div ref={mapContainer} className="map-canvas" />
 
       {/* Control Panel */}
-      <div
-        style={{
-          position: "absolute",
-          top: 20,
-          left: 20,
-          background: "rgba(17, 24, 39, 0.9)",
-          padding: "20px",
-          borderRadius: "12px",
-          color: "white",
-          fontFamily: "system-ui, -apple-system, sans-serif",
-          backdropFilter: "blur(10px)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          maxWidth: "280px",
-        }}
-      >
-        <h2 style={{ margin: "0 0 4px 0", fontSize: "18px", fontWeight: 600 }}>
-          🚇 Zagreb 2050
-        </h2>
-        <p style={{ margin: "0 0 16px 0", fontSize: "12px", color: "#9ca3af" }}>
-          Future Transit Vision
+      <div className="control-panel">
+        <h2 className="control-panel-title">🚇 Zagreb 2050</h2>
+        <p className="control-panel-subtitle">
+          Use timeline to explore construction phases
         </p>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={visibility.metroA}
-              onChange={() => {
-                toggleLayer("metroA");
-                toggleLayer("stations");
+        {/* Plan Switcher */}
+        <div className="plan-switcher-container">
+          <p className="plan-switcher-label">TRANSIT PLAN</p>
+          <div className="plan-switcher-buttons">
+            <button
+              onClick={() => {
+                setSelectedPlan("realistic");
+                setSelectedYear(2050);
               }}
-              style={{ accentColor: "#2563eb" }}
-            />
-            <span
-              style={{
-                width: "12px",
-                height: "12px",
-                background: "#2563eb",
-                borderRadius: "2px",
+              className={`plan-button realistic ${
+                selectedPlan === "realistic" ? "active" : ""
+              }`}
+            >
+              Realistic
+            </button>
+            <button
+              onClick={() => {
+                setSelectedPlan("ambitious");
+                setSelectedYear(2050);
               }}
-            />
-            <span style={{ fontSize: "14px" }}>Metro Line A</span>
-          </label>
-          {/* 
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={visibility.metroB}
-              onChange={() => toggleLayer("metroB")}
-              style={{ accentColor: "#dc2626" }}
-            />
-            <span
-              style={{
-                width: "12px",
-                height: "12px",
-                background: "#dc2626",
-                borderRadius: "2px",
-              }}
-            />
-            <span style={{ fontSize: "14px" }}>Metro Line B</span>
-          </label>
-
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={visibility.metroC}
-              onChange={() => toggleLayer("metroC")}
-              style={{ accentColor: "#16a34a" }}
-            />
-            <span
-              style={{
-                width: "12px",
-                height: "12px",
-                background: "#16a34a",
-                borderRadius: "2px",
-              }}
-            />
-            <span style={{ fontSize: "14px" }}>Metro Line C</span>
-          </label> */}
-
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={visibility.premetro}
-              onChange={() => toggleLayer("premetro")}
-              style={{ accentColor: "#8b5cf6" }}
-            />
-            <span
-              style={{
-                width: "12px",
-                height: "12px",
-                background: "#8b5cf6",
-                borderRadius: "2px",
-              }}
-            />
-            <span style={{ fontSize: "14px" }}>🚇 Premetro Tunnel</span>
-          </label>
-
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={visibility.gondola}
-              onChange={() => toggleLayer("gondola")}
-              style={{ accentColor: "#f59e0b" }}
-            />
-            <span
-              style={{
-                width: "12px",
-                height: "12px",
-                background: "#f59e0b",
-                borderRadius: "2px",
-              }}
-            />
-            <span style={{ fontSize: "14px" }}>🚡 Sava Skyway</span>
-          </label>
-
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={visibility.stations}
-              onChange={() => toggleLayer("stations")}
-            />
-            <span style={{ fontSize: "14px" }}>📍 Stations</span>
-          </label>
-
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={visibility.development}
-              onChange={() => toggleLayer("development")}
-            />
-            <span style={{ fontSize: "14px" }}>🏗️ Development Zones</span>
-          </label>
+              className={`plan-button ambitious ${
+                selectedPlan === "ambitious" ? "active" : ""
+              }`}
+            >
+              Ambitious
+            </button>
+          </div>
+          <p className="plan-description">{currentPlan.description}</p>
+          <p className="plan-cost">{currentPlan.cost}</p>
         </div>
 
-        <div
-          style={{
-            marginTop: "16px",
-            paddingTop: "16px",
-            borderTop: "1px solid rgba(255,255,255,0.1)",
-            fontSize: "11px",
-            color: "#6b7280",
-          }}
-        >
-          <p style={{ margin: "0 0 8px 0" }}>
-            <strong style={{ color: "#9ca3af" }}>Legend:</strong>
-          </p>
-          <p style={{ margin: "0 0 4px 0" }}>⚪ Large = Interchange station</p>
-          <p style={{ margin: "0 0 4px 0" }}>
-            🟣 Purple = Premetro (underground tram)
-          </p>
-          <p style={{ margin: "0 0 4px 0" }}>🟠 Orange = Gondola stations</p>
-          <p style={{ margin: "0" }}>Click stations for details</p>
+        <div className="layer-list">
+          <div className={`layer-item ${visibility.metroA ? "" : "inactive"}`}>
+            <div
+              className={`layer-checkbox ${
+                visibility.metroA ? "active metro-a" : ""
+              }`}
+            >
+              {visibility.metroA && (
+                <span className="layer-checkbox-icon">
+                  {activeElements.metroA === "partial" ? "🚧" : "✓"}
+                </span>
+              )}
+            </div>
+            <span
+              className={`layer-color-indicator metro-a ${
+                activeElements.metroA === "partial" ? "partial" : ""
+              }`}
+            />
+            <span className="layer-name">
+              Metro Line A
+              {activeElements.metroA === "partial" && (
+                <span className="layer-status"> (building)</span>
+              )}
+            </span>
+          </div>
+
+          <div className={`layer-item ${visibility.metroB ? "" : "inactive"}`}>
+            <div
+              className={`layer-checkbox ${
+                visibility.metroB ? "active metro-b" : ""
+              }`}
+            >
+              {visibility.metroB && (
+                <span className="layer-checkbox-icon">
+                  {activeElements.metroB === "partial" ? "🚧" : "✓"}
+                </span>
+              )}
+            </div>
+            <span
+              className={`layer-color-indicator metro-b ${
+                activeElements.metroB === "partial" ? "partial" : ""
+              }`}
+            />
+            <span className="layer-name">
+              Metro Line B
+              {activeElements.metroB === "partial" && (
+                <span className="layer-status"> (building)</span>
+              )}
+            </span>
+          </div>
+
+          <div className={`layer-item ${visibility.metroC ? "" : "inactive"}`}>
+            <div
+              className={`layer-checkbox ${
+                visibility.metroC ? "active metro-c" : ""
+              }`}
+            >
+              {visibility.metroC && (
+                <span className="layer-checkbox-icon">
+                  {activeElements.metroC === "partial" ? "🚧" : "✓"}
+                </span>
+              )}
+            </div>
+            <span
+              className={`layer-color-indicator metro-c ${
+                activeElements.metroC === "partial" ? "partial" : ""
+              }`}
+            />
+            <span className="layer-name">
+              Metro Line C
+              {activeElements.metroC === "partial" && (
+                <span className="layer-status"> (building)</span>
+              )}
+            </span>
+          </div>
+
+          <div
+            className={`layer-item ${visibility.premetro ? "" : "inactive"}`}
+          >
+            <div
+              className={`layer-checkbox ${
+                visibility.premetro ? "active premetro" : ""
+              }`}
+            >
+              {visibility.premetro && (
+                <span className="layer-checkbox-icon">
+                  {activeElements.premetro === "partial" ? "🚧" : "✓"}
+                </span>
+              )}
+            </div>
+            <span
+              className={`layer-color-indicator premetro ${
+                activeElements.premetro === "partial" ? "partial" : ""
+              }`}
+            />
+            <span className="layer-name">
+              🚇 Premetro Tunnel
+              {activeElements.premetro === "partial" && (
+                <span className="layer-status"> (building)</span>
+              )}
+            </span>
+          </div>
+
+          <div className={`layer-item ${visibility.gondola ? "" : "inactive"}`}>
+            <div
+              className={`layer-checkbox ${
+                visibility.gondola ? "active gondola" : ""
+              }`}
+            >
+              {visibility.gondola && (
+                <span className="layer-checkbox-icon">
+                  {activeElements.gondola === "partial" ? "🚧" : "✓"}
+                </span>
+              )}
+            </div>
+            <span
+              className={`layer-color-indicator gondola ${
+                activeElements.gondola === "partial" ? "partial" : ""
+              }`}
+            />
+            <span className="layer-name">
+              🚡 Sava Skyway
+              {activeElements.gondola === "partial" && (
+                <span className="layer-status"> (building)</span>
+              )}
+            </span>
+          </div>
+
+          <div
+            className={`layer-item ${visibility.development ? "" : "inactive"}`}
+          >
+            <div
+              className={`layer-checkbox ${
+                visibility.development ? "active development" : ""
+              }`}
+            >
+              {visibility.development && (
+                <span className="layer-checkbox-icon">
+                  {activeElements.development === "partial" ? "🚧" : "✓"}
+                </span>
+              )}
+            </div>
+            <span className="layer-name">
+              🏗️ Development Zones
+              {activeElements.development === "partial" && (
+                <span className="layer-status"> (planning)</span>
+              )}
+            </span>
+          </div>
         </div>
 
-        <button
-          onClick={resetView}
-          style={{
-            marginTop: "16px",
-            width: "100%",
-            padding: "10px 16px",
-            background: "rgba(59, 130, 246, 0.8)",
-            border: "none",
-            borderRadius: "8px",
-            color: "white",
-            fontSize: "13px",
-            fontWeight: 500,
-            cursor: "pointer",
-            transition: "background 0.2s",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.background = "rgba(59, 130, 246, 1)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.background = "rgba(59, 130, 246, 0.8)")
-          }
-        >
+        <div className="legend">
+          <p className="legend-title">
+            <strong>Active Elements:</strong>
+          </p>
+          <p>✓ Checked = Currently visible</p>
+          <p>Use timeline slider to see construction phases</p>
+          <p>Click stations for details</p>
+        </div>
+
+        <button onClick={resetView} className="reset-button">
           🔄 Reset View
         </button>
       </div>
 
+      {/* Timeline Control */}
+      <div className="timeline-control">
+        <div className="timeline-header">
+          <div className="timeline-info">
+            <h3>Timeline: {selectedYear}</h3>
+            <p>
+              {
+                currentPlan.timeline.find((p) => p.year === selectedYear)
+                  ?.description
+              }
+            </p>
+          </div>
+          <button
+            onClick={() => setSelectedYear(2050)}
+            className="timeline-full-network-button"
+          >
+            View Full Network
+          </button>
+        </div>
+
+        <div className="timeline-slider-container">
+          <div className="timeline-track" />
+          <div
+            className="timeline-progress"
+            style={{
+              width: `${((selectedYear - 2025) / (2050 - 2025)) * 100}%`,
+            }}
+          />
+
+          <div className="timeline-markers">
+            {currentPlan.timeline.map((phase) => (
+              <div
+                key={phase.year}
+                className="timeline-marker"
+                onClick={() => setSelectedYear(phase.year)}
+              >
+                <div
+                  className={`timeline-marker-dot ${
+                    selectedYear >= phase.year ? "active" : ""
+                  } ${selectedYear === phase.year ? "selected" : ""}`}
+                />
+                <span
+                  className={`timeline-marker-year ${
+                    selectedYear === phase.year ? "selected" : ""
+                  }`}
+                >
+                  {phase.year}
+                </span>
+                <span className="timeline-marker-label">{phase.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <input
+            type="range"
+            min="2025"
+            max="2050"
+            step="5"
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+            className="timeline-slider-input"
+          />
+        </div>
+      </div>
+
       {/* Title overlay */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 30,
-          right: 30,
-          textAlign: "right",
-          color: "white",
-          fontFamily: "system-ui, -apple-system, sans-serif",
-        }}
-      >
-        <h1
-          style={{
-            margin: 0,
-            fontSize: "32px",
-            fontWeight: 700,
-            textShadow: "0 2px 20px rgba(0,0,0,0.5)",
-          }}
-        >
-          ZAGREB
-        </h1>
-        <p
-          style={{
-            margin: "4px 0 0 0",
-            fontSize: "14px",
-            opacity: 0.8,
-            letterSpacing: "4px",
-            textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-          }}
-        >
-          FUTURE TRANSIT NETWORK
-        </p>
+      <div className="title-overlay">
+        <h1>ZAGREB</h1>
+        <p>FUTURE TRANSIT NETWORK</p>
       </div>
     </div>
   );

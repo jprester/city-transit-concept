@@ -1,0 +1,425 @@
+/* Map Container */
+.map-container {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+}
+
+.map-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+/* Control Panel */
+.control-panel {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: rgba(17, 24, 39, 0.9);
+  padding: 20px;
+  border-radius: 12px;
+  color: white;
+  font-family: system-ui, -apple-system, sans-serif;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 280px;
+}
+
+.control-panel-title {
+  margin: 0 0 4px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.control-panel-subtitle {
+  margin: 0 0 12px 0;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* Plan Switcher */
+.plan-switcher-container {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.plan-switcher-label {
+  margin: 0 0 8px 0;
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+.plan-switcher-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.plan-button {
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: white;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.plan-button.realistic {
+  background: transparent;
+  font-weight: 400;
+}
+
+.plan-button.realistic.active {
+  background: rgba(59, 130, 246, 0.8);
+  border-color: rgba(59, 130, 246, 1);
+  font-weight: 600;
+}
+
+.plan-button.realistic:not(.active):hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.plan-button.ambitious {
+  background: transparent;
+  font-weight: 400;
+}
+
+.plan-button.ambitious.active {
+  background: rgba(139, 92, 246, 0.8);
+  border-color: rgba(139, 92, 246, 1);
+  font-weight: 600;
+}
+
+.plan-button.ambitious:not(.active):hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.plan-description {
+  margin: 8px 0 0 0;
+  font-size: 10px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.plan-cost {
+  margin: 4px 0 0 0;
+  font-size: 10px;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* Layer List */
+.layer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.layer-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: opacity 0.2s;
+}
+
+.layer-item.inactive {
+  opacity: 0.4;
+}
+
+.layer-checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.layer-checkbox.active {
+  border-width: 2px;
+}
+
+.layer-checkbox.active.metro-a {
+  border-color: #2563eb;
+  background: #2563eb;
+}
+
+.layer-checkbox.active.metro-b {
+  border-color: #dc2626;
+  background: #dc2626;
+}
+
+.layer-checkbox.active.metro-c {
+  border-color: #16a34a;
+  background: #16a34a;
+}
+
+.layer-checkbox.active.premetro {
+  border-color: #8b5cf6;
+  background: #8b5cf6;
+}
+
+.layer-checkbox.active.gondola {
+  border-color: #f59e0b;
+  background: #f59e0b;
+}
+
+.layer-checkbox.active.development {
+  border-color: #3b82f6;
+  background: #3b82f6;
+}
+
+.layer-checkbox-icon {
+  color: white;
+  font-size: 10px;
+}
+
+.layer-color-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  transition: opacity 0.2s;
+}
+
+.layer-color-indicator.metro-a {
+  background: #2563eb;
+}
+
+.layer-color-indicator.metro-b {
+  background: #dc2626;
+}
+
+.layer-color-indicator.metro-c {
+  background: #16a34a;
+}
+
+.layer-color-indicator.premetro {
+  background: #8b5cf6;
+}
+
+.layer-color-indicator.gondola {
+  background: #f59e0b;
+}
+
+.layer-color-indicator.partial {
+  opacity: 0.5;
+}
+
+.layer-name {
+  font-size: 14px;
+}
+
+.layer-status {
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+/* Legend */
+.legend {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.legend-title {
+  margin: 0 0 8px 0;
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+.legend p {
+  margin: 0 0 4px 0;
+}
+
+.legend p:last-child {
+  margin: 0;
+}
+
+/* Reset View Button */
+.reset-button {
+  margin-top: 16px;
+  width: 100%;
+  padding: 10px 16px;
+  background: rgba(59, 130, 246, 0.8);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.reset-button:hover {
+  background: rgba(59, 130, 246, 1);
+}
+
+/* Timeline Control */
+.timeline-control {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(17, 24, 39, 0.9);
+  padding: 20px 30px;
+  border-radius: 12px;
+  color: white;
+  font-family: system-ui, -apple-system, sans-serif;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 600px;
+}
+
+.timeline-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.timeline-info h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.timeline-info p {
+  margin: 0;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.timeline-full-network-button {
+  padding: 6px 12px;
+  background: rgba(59, 130, 246, 0.3);
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  border-radius: 6px;
+  color: white;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.timeline-full-network-button:hover {
+  background: rgba(59, 130, 246, 0.5);
+}
+
+/* Timeline Slider */
+.timeline-slider-container {
+  position: relative;
+  padding-top: 10px;
+}
+
+.timeline-track {
+  position: absolute;
+  top: 21px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.timeline-progress {
+  position: absolute;
+  top: 21px;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.timeline-markers {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  top: 6px;
+}
+
+.timeline-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.timeline-marker-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(17, 24, 39, 1);
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+
+.timeline-marker-dot.active {
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+}
+
+.timeline-marker-dot.selected {
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.6);
+}
+
+.timeline-marker-year {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+.timeline-marker-year.selected {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.timeline-marker-label {
+  font-size: 9px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.timeline-slider-input {
+  position: absolute;
+  top: 15px;
+  left: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+  height: 20px;
+}
+
+/* Title Overlay */
+.title-overlay {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  text-align: right;
+  color: white;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.title-overlay h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+}
+
+.title-overlay p {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  opacity: 0.8;
+  letter-spacing: 4px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
