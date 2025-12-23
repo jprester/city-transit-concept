@@ -995,7 +995,9 @@ export default function Map() {
           <div
             className="timeline-progress"
             style={{
-              width: `${((selectedYear - 2025) / (2050 - 2025)) * 100}%`,
+              width: `calc(${
+                ((selectedYear - 2025) / (2050 - 2025)) * 100
+              }% - 7px)`,
             }}
           />
 

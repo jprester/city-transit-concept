@@ -340,8 +340,8 @@
 .timeline-track {
   position: absolute;
   top: 21px;
-  left: 0;
-  right: 0;
+  left: 7px;
+  right: 7px;
   height: 4px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 2px;
@@ -350,7 +350,7 @@
 .timeline-progress {
   position: absolute;
   top: 21px;
-  left: 0;
+  left: 7px;
   height: 4px;
   background: linear-gradient(90deg, #3b82f6, #8b5cf6);
   border-radius: 2px;
@@ -369,6 +369,8 @@
   flex-direction: column;
   align-items: center;
   cursor: pointer;
+  width: 0;
+  overflow: visible;
 }
 
 .timeline-marker-dot {
