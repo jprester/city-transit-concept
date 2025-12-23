@@ -23,6 +23,7 @@ import {
   type PlanType,
 } from "../data/transitNetwork";
 import { createGondolaLayer } from "../layers/GondolaLayer";
+import { useLanguage } from "../i18n/useLanguage";
 
 // Using a public demo token - in production you'd use your own
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
@@ -37,7 +38,32 @@ interface LayerVisibility {
   development: boolean;
 }
 
+// Helper function to get translated timeline description
+function getTimelineDescription(
+  year: number,
+  planType: PlanType,
+  t: any
+): string {
+  const key = `${planType}${year}Description` as keyof typeof t;
+  return t[key] || "";
+}
+
+// Helper function to get translated timeline label
+function getTimelineLabel(year: number, t: any): string {
+  const labelMap: Record<number, keyof typeof t> = {
+    2025: "presentDay",
+    2030: "earlyPhase",
+    2035: "midPhase",
+    2040: "advanced",
+    2045: "mature",
+    2050: "complete",
+  };
+  const key = labelMap[year];
+  return key ? t[key] : "";
+}
+
 export default function Map() {
+  const { language, setLanguage, t } = useLanguage();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [loaded, setLoaded] = useState(false);
@@ -371,21 +397,20 @@ export default function Map() {
         // Create moving dash effect by updating dasharray
         const offset = Math.abs(dashOffset % 7);
 
-        m.setPaintProperty("metro-line-a-animated", "line-dasharray", [
-          offset,
-          4,
-          3,
-        ]);
-        m.setPaintProperty("metro-line-b-animated", "line-dasharray", [
-          offset,
-          4,
-          3,
-        ]);
-        m.setPaintProperty("metro-line-c-animated", "line-dasharray", [
-          offset,
-          4,
-          3,
-        ]);
+        // Animate all metro and premetro segment layers
+        const allSegmentIds = [
+          ...Object.keys(metroASegments),
+          ...Object.keys(metroBSegments),
+          ...Object.keys(metroCSegments),
+          ...Object.keys(premetroSegments),
+        ];
+
+        allSegmentIds.forEach((segmentId) => {
+          const layerId = `layer-${segmentId}-animated`;
+          if (m.getLayer(layerId)) {
+            m.setPaintProperty(layerId, "line-dasharray", [offset, 4, 3]);
+          }
+        });
 
         requestAnimationFrame(animateDash);
       }
@@ -725,14 +750,28 @@ export default function Map() {
 
       {/* Control Panel */}
       <div className="control-panel">
-        <h2 className="control-panel-title">🚇 Zagreb 2050</h2>
-        <p className="control-panel-subtitle">
-          Use timeline to explore construction phases
-        </p>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+          }}
+        >
+          <div>
+            <h2 className="control-panel-title">{t.controlPanelTitle}</h2>
+            <p className="control-panel-subtitle">{t.controlPanelSubtitle}</p>
+          </div>
+          <button
+            onClick={() => setLanguage(language === "hr" ? "en" : "hr")}
+            className="language-selector"
+          >
+            {language === "hr" ? "EN" : "HR"}
+          </button>
+        </div>
 
         {/* Plan Switcher */}
         <div className="plan-switcher-container">
-          <p className="plan-switcher-label">TRANSIT PLAN</p>
+          <p className="plan-switcher-label">{t.transitPlanLabel}</p>
           <div className="plan-switcher-buttons">
             <button
               onClick={() => {
@@ -743,7 +782,7 @@ export default function Map() {
                 selectedPlan === "realistic" ? "active" : ""
               }`}
             >
-              Realistic
+              {t.realisticPlan}
             </button>
             <button
               onClick={() => {
@@ -754,11 +793,19 @@ export default function Map() {
                 selectedPlan === "ambitious" ? "active" : ""
               }`}
             >
-              Ambitious
+              {t.ambitiousPlan}
             </button>
           </div>
-          <p className="plan-description">{currentPlan.description}</p>
-          <p className="plan-cost">{currentPlan.cost}</p>
+          <p className="plan-description">
+            {selectedPlan === "realistic"
+              ? t.realisticPlanDescription
+              : t.ambitiousPlanDescription}
+          </p>
+          <p className="plan-cost">
+            {selectedPlan === "realistic"
+              ? t.realisticPlanCost
+              : t.ambitiousPlanCost}
+          </p>
         </div>
 
         <div className="layer-list">
@@ -780,9 +827,9 @@ export default function Map() {
               }`}
             />
             <span className="layer-name">
-              Metro Line A
+              {t.metroLineA}
               {activeElements.metroA === "partial" && (
-                <span className="layer-status"> (building)</span>
+                <span className="layer-status"> ({t.building})</span>
               )}
             </span>
           </div>
@@ -805,9 +852,9 @@ export default function Map() {
               }`}
             />
             <span className="layer-name">
-              Metro Line B
+              {t.metroLineB}
               {activeElements.metroB === "partial" && (
-                <span className="layer-status"> (building)</span>
+                <span className="layer-status"> ({t.building})</span>
               )}
             </span>
           </div>
@@ -830,9 +877,9 @@ export default function Map() {
               }`}
             />
             <span className="layer-name">
-              Metro Line C
+              {t.metroLineC}
               {activeElements.metroC === "partial" && (
-                <span className="layer-status"> (building)</span>
+                <span className="layer-status"> ({t.building})</span>
               )}
             </span>
           </div>
@@ -857,9 +904,9 @@ export default function Map() {
               }`}
             />
             <span className="layer-name">
-              🚇 Premetro Tunnel
+              {t.premetroTunnel}
               {activeElements.premetro === "partial" && (
-                <span className="layer-status"> (building)</span>
+                <span className="layer-status"> ({t.building})</span>
               )}
             </span>
           </div>
@@ -882,9 +929,9 @@ export default function Map() {
               }`}
             />
             <span className="layer-name">
-              🚡 Sava Skyway
+              {t.savaSkyway}
               {activeElements.gondola === "partial" && (
-                <span className="layer-status"> (building)</span>
+                <span className="layer-status"> ({t.building})</span>
               )}
             </span>
           </div>
@@ -904,9 +951,9 @@ export default function Map() {
               )}
             </div>
             <span className="layer-name">
-              🏗️ Development Zones
+              {t.developmentZones}
               {activeElements.development === "partial" && (
-                <span className="layer-status"> (planning)</span>
+                <span className="layer-status"> ({t.planning})</span>
               )}
             </span>
           </div>
@@ -914,15 +961,15 @@ export default function Map() {
 
         <div className="legend">
           <p className="legend-title">
-            <strong>Active Elements:</strong>
+            <strong>{t.activeElementsTitle}</strong>
           </p>
-          <p>✓ Checked = Currently visible</p>
-          <p>Use timeline slider to see construction phases</p>
-          <p>Click stations for details</p>
+          <p>{t.activeElementsChecked}</p>
+          <p>{t.activeElementsTimeline}</p>
+          <p>{t.activeElementsClickStations}</p>
         </div>
 
         <button onClick={resetView} className="reset-button">
-          🔄 Reset View
+          {t.resetViewButton}
         </button>
       </div>
 
@@ -930,19 +977,16 @@ export default function Map() {
       <div className="timeline-control">
         <div className="timeline-header">
           <div className="timeline-info">
-            <h3>Timeline: {selectedYear}</h3>
-            <p>
-              {
-                currentPlan.timeline.find((p) => p.year === selectedYear)
-                  ?.description
-              }
-            </p>
+            <h3>
+              {t.timelineLabel} {selectedYear}
+            </h3>
+            <p>{getTimelineDescription(selectedYear, selectedPlan, t)}</p>
           </div>
           <button
             onClick={() => setSelectedYear(2050)}
             className="timeline-full-network-button"
           >
-            View Full Network
+            {t.viewFullNetwork}
           </button>
         </div>
 
@@ -974,7 +1018,9 @@ export default function Map() {
                 >
                   {phase.year}
                 </span>
-                <span className="timeline-marker-label">{phase.label}</span>
+                <span className="timeline-marker-label">
+                  {getTimelineLabel(phase.year, t)}
+                </span>
               </div>
             ))}
           </div>
@@ -993,8 +1039,8 @@ export default function Map() {
 
       {/* Title overlay */}
       <div className="title-overlay">
-        <h1>ZAGREB</h1>
-        <p>FUTURE TRANSIT NETWORK</p>
+        <h1>{t.appTitle}</h1>
+        <p>{t.appSubtitle}</p>
       </div>
     </div>
   );

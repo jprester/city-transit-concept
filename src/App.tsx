@@ -1,7 +1,12 @@
 import Map from "./components/Map";
+import { LanguageProvider } from "./i18n/LanguageContext";
 
 function App() {
-  return <Map />;
+  return (
+    <LanguageProvider>
+      <Map />
+    </LanguageProvider>
+  );
 }
 
 export default App
