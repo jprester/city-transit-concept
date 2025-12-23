@@ -1,11 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import "./Map.css";
 
 import {
-  metroLineA,
-  metroLineB,
-  metroLineC,
   gondolaLine,
   metroStations,
   gondolaStations,
@@ -13,8 +11,19 @@ import {
   premetroTunnel,
   premetroStations,
   STATION_GLAVNI_KOLODVOR,
+  transitPlans,
+  getActiveElements,
+  getActiveSegments,
+  getActiveStationNames,
+  metroASegments,
+  metroBSegments,
+  metroCSegments,
+  premetroSegments,
+  gondolaSegments,
+  type PlanType,
 } from "../data/transitNetwork";
 import { createGondolaLayer } from "../layers/GondolaLayer";
+import { useLanguage } from "../i18n/useLanguage";
 
 // Using a public demo token - in production you'd use your own
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
@@ -29,19 +38,115 @@ interface LayerVisibility {
   development: boolean;
 }
 
+// Helper function to get translated timeline description
+function getTimelineDescription(
+  year: number,
+  planType: PlanType,
+  t: any
+): string {
+  const key = `${planType}${year}Description` as keyof typeof t;
+  return t[key] || "";
+}
+
+// Helper function to get translated timeline label
+function getTimelineLabel(year: number, t: any): string {
+  const labelMap: Record<number, keyof typeof t> = {
+    2025: "presentDay",
+    2030: "earlyPhase",
+    2035: "midPhase",
+    2040: "advanced",
+    2045: "mature",
+    2050: "complete",
+  };
+  const key = labelMap[year];
+  return key ? t[key] : "";
+}
+
 export default function Map() {
+  const { language, setLanguage, t } = useLanguage();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [loaded, setLoaded] = useState(false);
-  const [visibility, setVisibility] = useState<LayerVisibility>({
-    metroA: true,
-    metroB: false,
-    metroC: false,
-    premetro: true,
-    gondola: true,
-    stations: true,
-    development: true,
-  });
+  const [selectedPlan, setSelectedPlan] = useState<PlanType>("realistic");
+  const [selectedYear, setSelectedYear] = useState(2050); // Default to showing everything
+  // Get current construction phase for active elements
+  const activeElements = useMemo(
+    () => getActiveElements(selectedYear, selectedPlan),
+    [selectedYear, selectedPlan]
+  );
+  const visibility = useMemo<LayerVisibility>(
+    () => ({
+      metroA: activeElements.metroA !== "none",
+      metroB: activeElements.metroB !== "none",
+      metroC: activeElements.metroC !== "none",
+      premetro: activeElements.premetro !== "none",
+      gondola: activeElements.gondola !== "none",
+      stations:
+        activeElements.metroA !== "none" ||
+        activeElements.metroB !== "none" ||
+        activeElements.metroC !== "none",
+      development: activeElements.development !== "none",
+    }),
+    [activeElements]
+  );
+
+  const currentPlan = transitPlans[selectedPlan];
+
+  // Helper function to add a line segment to the map
+  const addSegmentToMap = (
+    map: mapboxgl.Map,
+    segmentId: string,
+    coordinates: number[][],
+    color: string,
+    isAnimated = true
+  ) => {
+    const sourceId = `segment-${segmentId}`;
+    const layerId = `layer-${segmentId}`;
+    const animatedLayerId = `layer-${segmentId}-animated`;
+
+    map.addSource(sourceId, {
+      type: "geojson",
+      data: {
+        type: "Feature",
+        properties: {},
+        geometry: {
+          type: "LineString",
+          coordinates,
+        },
+      },
+    });
+
+    map.addLayer({
+      id: layerId,
+      type: "line",
+      source: sourceId,
+      paint: {
+        "line-color": color,
+        "line-width": 4,
+        "line-opacity": 0.9,
+      },
+      layout: {
+        visibility: "none",
+      },
+    });
+
+    if (isAnimated) {
+      map.addLayer({
+        id: animatedLayerId,
+        type: "line",
+        source: sourceId,
+        paint: {
+          "line-color": "#ffffff",
+          "line-width": 2,
+          "line-dasharray": [0, 4, 3],
+          "line-opacity": 0.6,
+        },
+        layout: {
+          visibility: "none",
+        },
+      });
+    }
+  };
 
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
@@ -108,37 +213,7 @@ export default function Map() {
         },
       });
 
-      // Add Premetro Tunnel
-      m.addSource("premetro-tunnel", {
-        type: "geojson",
-        data: premetroTunnel,
-      });
-
-      m.addLayer({
-        id: "premetro-tunnel",
-        type: "line",
-        source: "premetro-tunnel",
-        paint: {
-          "line-color": premetroTunnel.properties.color,
-          "line-width": 6,
-          "line-opacity": 0.9,
-        },
-      });
-
-      // Animated dash for premetro
-      m.addLayer({
-        id: "premetro-tunnel-animated",
-        type: "line",
-        source: "premetro-tunnel",
-        paint: {
-          "line-color": "#ffffff",
-          "line-width": 2,
-          "line-dasharray": [2, 4],
-          "line-opacity": 0.5,
-        },
-      });
-
-      // Premetro stations
+      // Premetro stations (line segments are added later as part of the segment system)
       m.addSource("premetro-stations", {
         type: "geojson",
         data: premetroStations,
@@ -191,110 +266,29 @@ export default function Map() {
         },
       });
 
-      // Add Metro Line A
-      m.addSource("metro-line-a", {
-        type: "geojson",
-        data: metroLineA,
+      // Add Metro Line A Segments
+      Object.values(metroASegments).forEach((segment) => {
+        addSegmentToMap(m, segment.id, segment.coordinates, "#2563eb");
       });
 
-      m.addLayer({
-        id: "metro-line-a",
-        type: "line",
-        source: "metro-line-a",
-        paint: {
-          "line-color": metroLineA.properties.color,
-          "line-width": 4,
-          "line-opacity": 0.9,
-        },
+      // Add Metro Line B Segments
+      Object.values(metroBSegments).forEach((segment) => {
+        addSegmentToMap(m, segment.id, segment.coordinates, "#dc2626");
       });
 
-      // Animated dash effect for Metro A
-      m.addLayer({
-        id: "metro-line-a-animated",
-        type: "line",
-        source: "metro-line-a",
-        paint: {
-          "line-color": "#ffffff",
-          "line-width": 2,
-          "line-dasharray": [0, 4, 3],
-          "line-opacity": 0.6,
-        },
+      // Add Metro Line C Segments
+      Object.values(metroCSegments).forEach((segment) => {
+        addSegmentToMap(m, segment.id, segment.coordinates, "#16a34a");
       });
 
-      // Add Metro Line B
-      m.addSource("metro-line-b", {
-        type: "geojson",
-        data: metroLineB,
+      // Add Premetro Segments
+      Object.values(premetroSegments).forEach((segment) => {
+        addSegmentToMap(m, segment.id, segment.coordinates, "#8b5cf6");
       });
 
-      m.addLayer({
-        id: "metro-line-b",
-        type: "line",
-        source: "metro-line-b",
-        paint: {
-          "line-color": metroLineB.properties.color,
-          "line-width": 4,
-          "line-opacity": 0.9,
-        },
-      });
-
-      m.addLayer({
-        id: "metro-line-b-animated",
-        type: "line",
-        source: "metro-line-b",
-        paint: {
-          "line-color": "#ffffff",
-          "line-width": 2,
-          "line-dasharray": [0, 4, 3],
-          "line-opacity": 0.6,
-        },
-      });
-
-      // Add Metro Line C
-      m.addSource("metro-line-c", {
-        type: "geojson",
-        data: metroLineC,
-      });
-
-      m.addLayer({
-        id: "metro-line-c",
-        type: "line",
-        source: "metro-line-c",
-        paint: {
-          "line-color": metroLineC.properties.color,
-          "line-width": 4,
-          "line-opacity": 0.9,
-        },
-      });
-
-      m.addLayer({
-        id: "metro-line-c-animated",
-        type: "line",
-        source: "metro-line-c",
-        paint: {
-          "line-color": "#ffffff",
-          "line-width": 2,
-          "line-dasharray": [0, 4, 3],
-          "line-opacity": 0.6,
-        },
-      });
-
-      // Add Gondola Line (2D representation)
-      m.addSource("gondola-line", {
-        type: "geojson",
-        data: gondolaLine,
-      });
-
-      m.addLayer({
-        id: "gondola-line",
-        type: "line",
-        source: "gondola-line",
-        paint: {
-          "line-color": gondolaLine.properties.color,
-          "line-width": 3,
-          "line-dasharray": [4, 2],
-          "line-opacity": 0.8,
-        },
+      // Add Gondola Segments
+      Object.values(gondolaSegments).forEach((segment) => {
+        addSegmentToMap(m, segment.id, segment.coordinates, "#f59e0b", false);
       });
 
       // Add Metro Stations
@@ -403,21 +397,20 @@ export default function Map() {
         // Create moving dash effect by updating dasharray
         const offset = Math.abs(dashOffset % 7);
 
-        m.setPaintProperty("metro-line-a-animated", "line-dasharray", [
-          offset,
-          4,
-          3,
-        ]);
-        m.setPaintProperty("metro-line-b-animated", "line-dasharray", [
-          offset,
-          4,
-          3,
-        ]);
-        m.setPaintProperty("metro-line-c-animated", "line-dasharray", [
-          offset,
-          4,
-          3,
-        ]);
+        // Animate all metro and premetro segment layers
+        const allSegmentIds = [
+          ...Object.keys(metroASegments),
+          ...Object.keys(metroBSegments),
+          ...Object.keys(metroCSegments),
+          ...Object.keys(premetroSegments),
+        ];
+
+        allSegmentIds.forEach((segmentId) => {
+          const layerId = `layer-${segmentId}-animated`;
+          if (m.getLayer(layerId)) {
+            m.setPaintProperty(layerId, "line-dasharray", [offset, 4, 3]);
+          }
+        });
 
         requestAnimationFrame(animateDash);
       }
@@ -564,7 +557,24 @@ export default function Map() {
     };
   }, []);
 
-  // Handle visibility changes
+  // Update layer opacity based on construction phase
+  useEffect(() => {
+    if (map.current && loaded) {
+      const m = map.current;
+
+      // Development zones opacity (only thing that still uses opacity for partial state)
+      const devOpacity = activeElements.development === "partial" ? 0.15 : 0.25;
+      if (m.getLayer("development-zones-fill")) {
+        m.setPaintProperty(
+          "development-zones-fill",
+          "fill-opacity",
+          devOpacity
+        );
+      }
+    }
+  }, [activeElements, loaded]);
+
+  // Handle segment visibility based on timeline
   useEffect(() => {
     if (!map.current || !loaded) return;
     const m = map.current;
@@ -579,49 +589,67 @@ export default function Map() {
       }
     };
 
-    setVis("metro-line-a", visibility.metroA);
-    setVis("metro-line-a-animated", visibility.metroA);
-    setVis("metro-line-b", visibility.metroB);
-    setVis("metro-line-b-animated", visibility.metroB);
-    setVis("metro-line-c", visibility.metroC);
-    setVis("metro-line-c-animated", visibility.metroC);
-    setVis("gondola-line", visibility.gondola);
+    // Get active segments for current timeline
+    const activeSegments = getActiveSegments(selectedYear, selectedPlan);
+
+    // Metro A segments
+    Object.keys(metroASegments).forEach((segmentId) => {
+      const isActive = activeSegments?.metroA?.includes(segmentId) || false;
+      setVis(`layer-${segmentId}`, isActive);
+      setVis(`layer-${segmentId}-animated`, isActive);
+    });
+
+    // Metro B segments
+    Object.keys(metroBSegments).forEach((segmentId) => {
+      const isActive = activeSegments?.metroB?.includes(segmentId) || false;
+      setVis(`layer-${segmentId}`, isActive);
+      setVis(`layer-${segmentId}-animated`, isActive);
+    });
+
+    // Metro C segments
+    Object.keys(metroCSegments).forEach((segmentId) => {
+      const isActive = activeSegments?.metroC?.includes(segmentId) || false;
+      setVis(`layer-${segmentId}`, isActive);
+      setVis(`layer-${segmentId}-animated`, isActive);
+    });
+
+    // Premetro segments
+    Object.keys(premetroSegments).forEach((segmentId) => {
+      const isActive = activeSegments?.premetro?.includes(segmentId) || false;
+      setVis(`layer-${segmentId}`, isActive);
+      setVis(`layer-${segmentId}-animated`, isActive);
+    });
+
+    // Gondola segments
+    Object.keys(gondolaSegments).forEach((segmentId) => {
+      const isActive = activeSegments?.gondola?.includes(segmentId) || false;
+      setVis(`layer-${segmentId}`, isActive);
+    });
+
+    // Other layers (gondola 3D, stations, development zones)
     setVis("gondola-3d", visibility.gondola);
     setVis("gondola-stations", visibility.gondola);
     setVis("gondola-labels", visibility.gondola);
-    setVis("premetro-tunnel", visibility.premetro);
-    setVis("premetro-tunnel-animated", visibility.premetro);
     setVis("premetro-portals", visibility.premetro);
     setVis("premetro-underground", visibility.premetro);
     setVis("premetro-labels", visibility.premetro);
     setVis("development-zones-fill", visibility.development);
     setVis("development-zones-outline", visibility.development);
 
-    // Build filter for metro stations based on visible lines
-    // Stations should show if any of their lines are currently visible
-    const visibleLines: string[] = [];
-    if (visibility.metroA) visibleLines.push("A");
-    if (visibility.metroB) visibleLines.push("B");
-    if (visibility.metroC) visibleLines.push("C");
+    // Build filter for metro stations based on active segments
+    // Only show stations that are part of currently active segments
+    const activeStationNames = getActiveStationNames(
+      selectedYear,
+      selectedPlan
+    );
 
-    // Create filter: show station if any of its lines is in the visible lines list
-    // We check if the line letter appears in the stringified lines array
-    // For interchange stations, they stay visible as long as at least one of their lines is visible
+    // Create filter: show station if its name is in the active stations list
     const stationFilter: mapboxgl.FilterSpecification =
-      visibleLines.length > 0
-        ? [
-            "any",
-            ...visibleLines.map(
-              (line): mapboxgl.ExpressionSpecification => [
-                "in",
-                line,
-                ["to-string", ["get", "lines"]],
-              ]
-            ),
-          ]
-        : ["==", "1", "0"]; // Always false filter when no lines visible
+      activeStationNames.length > 0
+        ? ["in", ["get", "name"], ["literal", activeStationNames]]
+        : ["==", "1", "0"]; // Always false filter when no stations active
 
-    // Apply filters and visibility to station layers
+    // Apply filters and visibility to metro station layers
     if (m.getLayer("metro-stations-regular")) {
       m.setLayoutProperty(
         "metro-stations-regular",
@@ -656,11 +684,54 @@ export default function Map() {
       );
       m.setFilter("station-labels", stationFilter);
     }
-  }, [visibility, loaded]);
 
-  const toggleLayer = (layer: keyof LayerVisibility) => {
-    setVisibility((prev) => ({ ...prev, [layer]: !prev[layer] }));
-  };
+    // Apply same logic to premetro stations
+    if (m.getLayer("premetro-portals")) {
+      m.setLayoutProperty(
+        "premetro-portals",
+        "visibility",
+        visibility.premetro ? "visible" : "none"
+      );
+      m.setFilter("premetro-portals", stationFilter);
+    }
+
+    if (m.getLayer("premetro-underground")) {
+      m.setLayoutProperty(
+        "premetro-underground",
+        "visibility",
+        visibility.premetro ? "visible" : "none"
+      );
+      m.setFilter("premetro-underground", stationFilter);
+    }
+
+    if (m.getLayer("premetro-labels")) {
+      m.setLayoutProperty(
+        "premetro-labels",
+        "visibility",
+        visibility.premetro ? "visible" : "none"
+      );
+      m.setFilter("premetro-labels", stationFilter);
+    }
+
+    // Apply same logic to gondola stations
+    if (m.getLayer("gondola-stations")) {
+      m.setLayoutProperty(
+        "gondola-stations",
+        "visibility",
+        visibility.gondola ? "visible" : "none"
+      );
+      m.setFilter("gondola-stations", stationFilter);
+    }
+
+    if (m.getLayer("gondola-labels")) {
+      m.setLayoutProperty(
+        "gondola-labels",
+        "visibility",
+        visibility.gondola ? "visible" : "none"
+      );
+      m.setFilter("gondola-labels", stationFilter);
+    }
+  }, [visibility, loaded, selectedYear, selectedPlan]);
 
   const resetView = () => {
     if (!map.current) return;
@@ -674,272 +745,304 @@ export default function Map() {
   };
 
   return (
-    <div style={{ width: "100%", height: "100vh", position: "relative" }}>
-      <div ref={mapContainer} style={{ width: "100%", height: "100%" }} />
+    <div className="map-container">
+      <div ref={mapContainer} className="map-canvas" />
 
       {/* Control Panel */}
-      <div
-        style={{
-          position: "absolute",
-          top: 20,
-          left: 20,
-          background: "rgba(17, 24, 39, 0.9)",
-          padding: "20px",
-          borderRadius: "12px",
-          color: "white",
-          fontFamily: "system-ui, -apple-system, sans-serif",
-          backdropFilter: "blur(10px)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          maxWidth: "280px",
-        }}
-      >
-        <h2 style={{ margin: "0 0 4px 0", fontSize: "18px", fontWeight: 600 }}>
-          🚇 Zagreb 2050
-        </h2>
-        <p style={{ margin: "0 0 16px 0", fontSize: "12px", color: "#9ca3af" }}>
-          Future Transit Vision
-        </p>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={visibility.metroA}
-              onChange={() => {
-                toggleLayer("metroA");
-                toggleLayer("stations");
-              }}
-              style={{ accentColor: "#2563eb" }}
-            />
-            <span
-              style={{
-                width: "12px",
-                height: "12px",
-                background: "#2563eb",
-                borderRadius: "2px",
-              }}
-            />
-            <span style={{ fontSize: "14px" }}>Metro Line A</span>
-          </label>
-          {/* 
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={visibility.metroB}
-              onChange={() => toggleLayer("metroB")}
-              style={{ accentColor: "#dc2626" }}
-            />
-            <span
-              style={{
-                width: "12px",
-                height: "12px",
-                background: "#dc2626",
-                borderRadius: "2px",
-              }}
-            />
-            <span style={{ fontSize: "14px" }}>Metro Line B</span>
-          </label>
-
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={visibility.metroC}
-              onChange={() => toggleLayer("metroC")}
-              style={{ accentColor: "#16a34a" }}
-            />
-            <span
-              style={{
-                width: "12px",
-                height: "12px",
-                background: "#16a34a",
-                borderRadius: "2px",
-              }}
-            />
-            <span style={{ fontSize: "14px" }}>Metro Line C</span>
-          </label> */}
-
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={visibility.premetro}
-              onChange={() => toggleLayer("premetro")}
-              style={{ accentColor: "#8b5cf6" }}
-            />
-            <span
-              style={{
-                width: "12px",
-                height: "12px",
-                background: "#8b5cf6",
-                borderRadius: "2px",
-              }}
-            />
-            <span style={{ fontSize: "14px" }}>🚇 Premetro Tunnel</span>
-          </label>
-
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={visibility.gondola}
-              onChange={() => toggleLayer("gondola")}
-              style={{ accentColor: "#f59e0b" }}
-            />
-            <span
-              style={{
-                width: "12px",
-                height: "12px",
-                background: "#f59e0b",
-                borderRadius: "2px",
-              }}
-            />
-            <span style={{ fontSize: "14px" }}>🚡 Sava Skyway</span>
-          </label>
-
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={visibility.stations}
-              onChange={() => toggleLayer("stations")}
-            />
-            <span style={{ fontSize: "14px" }}>📍 Stations</span>
-          </label>
-
-          <label
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={visibility.development}
-              onChange={() => toggleLayer("development")}
-            />
-            <span style={{ fontSize: "14px" }}>🏗️ Development Zones</span>
-          </label>
-        </div>
-
+      <div className="control-panel">
         <div
           style={{
-            marginTop: "16px",
-            paddingTop: "16px",
-            borderTop: "1px solid rgba(255,255,255,0.1)",
-            fontSize: "11px",
-            color: "#6b7280",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
           }}
         >
-          <p style={{ margin: "0 0 8px 0" }}>
-            <strong style={{ color: "#9ca3af" }}>Legend:</strong>
-          </p>
-          <p style={{ margin: "0 0 4px 0" }}>⚪ Large = Interchange station</p>
-          <p style={{ margin: "0 0 4px 0" }}>
-            🟣 Purple = Premetro (underground tram)
-          </p>
-          <p style={{ margin: "0 0 4px 0" }}>🟠 Orange = Gondola stations</p>
-          <p style={{ margin: "0" }}>Click stations for details</p>
+          <div>
+            <h2 className="control-panel-title">{t.controlPanelTitle}</h2>
+            <p className="control-panel-subtitle">{t.controlPanelSubtitle}</p>
+          </div>
+          <button
+            onClick={() => setLanguage(language === "hr" ? "en" : "hr")}
+            className="language-selector"
+          >
+            {language === "hr" ? "EN" : "HR"}
+          </button>
         </div>
 
-        <button
-          onClick={resetView}
-          style={{
-            marginTop: "16px",
-            width: "100%",
-            padding: "10px 16px",
-            background: "rgba(59, 130, 246, 0.8)",
-            border: "none",
-            borderRadius: "8px",
-            color: "white",
-            fontSize: "13px",
-            fontWeight: 500,
-            cursor: "pointer",
-            transition: "background 0.2s",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.background = "rgba(59, 130, 246, 1)")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.background = "rgba(59, 130, 246, 0.8)")
-          }
-        >
-          🔄 Reset View
+        {/* Plan Switcher */}
+        <div className="plan-switcher-container">
+          <p className="plan-switcher-label">{t.transitPlanLabel}</p>
+          <div className="plan-switcher-buttons">
+            <button
+              onClick={() => {
+                setSelectedPlan("realistic");
+                setSelectedYear(2050);
+              }}
+              className={`plan-button realistic ${
+                selectedPlan === "realistic" ? "active" : ""
+              }`}
+            >
+              {t.realisticPlan}
+            </button>
+            <button
+              onClick={() => {
+                setSelectedPlan("ambitious");
+                setSelectedYear(2050);
+              }}
+              className={`plan-button ambitious ${
+                selectedPlan === "ambitious" ? "active" : ""
+              }`}
+            >
+              {t.ambitiousPlan}
+            </button>
+          </div>
+          <p className="plan-description">
+            {selectedPlan === "realistic"
+              ? t.realisticPlanDescription
+              : t.ambitiousPlanDescription}
+          </p>
+          <p className="plan-cost">
+            {selectedPlan === "realistic"
+              ? t.realisticPlanCost
+              : t.ambitiousPlanCost}
+          </p>
+        </div>
+
+        <div className="layer-list">
+          <div className={`layer-item ${visibility.metroA ? "" : "inactive"}`}>
+            <div
+              className={`layer-checkbox ${
+                visibility.metroA ? "active metro-a" : ""
+              }`}
+            >
+              {visibility.metroA && (
+                <span className="layer-checkbox-icon">
+                  {activeElements.metroA === "partial" ? "🚧" : "✓"}
+                </span>
+              )}
+            </div>
+            <span
+              className={`layer-color-indicator metro-a ${
+                activeElements.metroA === "partial" ? "partial" : ""
+              }`}
+            />
+            <span className="layer-name">
+              {t.metroLineA}
+              {activeElements.metroA === "partial" && (
+                <span className="layer-status"> ({t.building})</span>
+              )}
+            </span>
+          </div>
+
+          <div className={`layer-item ${visibility.metroB ? "" : "inactive"}`}>
+            <div
+              className={`layer-checkbox ${
+                visibility.metroB ? "active metro-b" : ""
+              }`}
+            >
+              {visibility.metroB && (
+                <span className="layer-checkbox-icon">
+                  {activeElements.metroB === "partial" ? "🚧" : "✓"}
+                </span>
+              )}
+            </div>
+            <span
+              className={`layer-color-indicator metro-b ${
+                activeElements.metroB === "partial" ? "partial" : ""
+              }`}
+            />
+            <span className="layer-name">
+              {t.metroLineB}
+              {activeElements.metroB === "partial" && (
+                <span className="layer-status"> ({t.building})</span>
+              )}
+            </span>
+          </div>
+
+          <div className={`layer-item ${visibility.metroC ? "" : "inactive"}`}>
+            <div
+              className={`layer-checkbox ${
+                visibility.metroC ? "active metro-c" : ""
+              }`}
+            >
+              {visibility.metroC && (
+                <span className="layer-checkbox-icon">
+                  {activeElements.metroC === "partial" ? "🚧" : "✓"}
+                </span>
+              )}
+            </div>
+            <span
+              className={`layer-color-indicator metro-c ${
+                activeElements.metroC === "partial" ? "partial" : ""
+              }`}
+            />
+            <span className="layer-name">
+              {t.metroLineC}
+              {activeElements.metroC === "partial" && (
+                <span className="layer-status"> ({t.building})</span>
+              )}
+            </span>
+          </div>
+
+          <div
+            className={`layer-item ${visibility.premetro ? "" : "inactive"}`}
+          >
+            <div
+              className={`layer-checkbox ${
+                visibility.premetro ? "active premetro" : ""
+              }`}
+            >
+              {visibility.premetro && (
+                <span className="layer-checkbox-icon">
+                  {activeElements.premetro === "partial" ? "🚧" : "✓"}
+                </span>
+              )}
+            </div>
+            <span
+              className={`layer-color-indicator premetro ${
+                activeElements.premetro === "partial" ? "partial" : ""
+              }`}
+            />
+            <span className="layer-name">
+              {t.premetroTunnel}
+              {activeElements.premetro === "partial" && (
+                <span className="layer-status"> ({t.building})</span>
+              )}
+            </span>
+          </div>
+
+          <div className={`layer-item ${visibility.gondola ? "" : "inactive"}`}>
+            <div
+              className={`layer-checkbox ${
+                visibility.gondola ? "active gondola" : ""
+              }`}
+            >
+              {visibility.gondola && (
+                <span className="layer-checkbox-icon">
+                  {activeElements.gondola === "partial" ? "🚧" : "✓"}
+                </span>
+              )}
+            </div>
+            <span
+              className={`layer-color-indicator gondola ${
+                activeElements.gondola === "partial" ? "partial" : ""
+              }`}
+            />
+            <span className="layer-name">
+              {t.savaSkyway}
+              {activeElements.gondola === "partial" && (
+                <span className="layer-status"> ({t.building})</span>
+              )}
+            </span>
+          </div>
+
+          <div
+            className={`layer-item ${visibility.development ? "" : "inactive"}`}
+          >
+            <div
+              className={`layer-checkbox ${
+                visibility.development ? "active development" : ""
+              }`}
+            >
+              {visibility.development && (
+                <span className="layer-checkbox-icon">
+                  {activeElements.development === "partial" ? "🚧" : "✓"}
+                </span>
+              )}
+            </div>
+            <span className="layer-name">
+              {t.developmentZones}
+              {activeElements.development === "partial" && (
+                <span className="layer-status"> ({t.planning})</span>
+              )}
+            </span>
+          </div>
+        </div>
+
+        <div className="legend">
+          <p className="legend-title">
+            <strong>{t.activeElementsTitle}</strong>
+          </p>
+          <p>{t.activeElementsChecked}</p>
+          <p>{t.activeElementsTimeline}</p>
+          <p>{t.activeElementsClickStations}</p>
+        </div>
+
+        <button onClick={resetView} className="reset-button">
+          {t.resetViewButton}
         </button>
       </div>
 
+      {/* Timeline Control */}
+      <div className="timeline-control">
+        <div className="timeline-header">
+          <div className="timeline-info">
+            <h3>
+              {t.timelineLabel} {selectedYear}
+            </h3>
+            <p>{getTimelineDescription(selectedYear, selectedPlan, t)}</p>
+          </div>
+          <button
+            onClick={() => setSelectedYear(2050)}
+            className="timeline-full-network-button"
+          >
+            {t.viewFullNetwork}
+          </button>
+        </div>
+
+        <div className="timeline-slider-container">
+          <div className="timeline-track" />
+          <div
+            className="timeline-progress"
+            style={{
+              width: `calc(${
+                ((selectedYear - 2025) / (2050 - 2025)) * 100
+              }% - 7px)`,
+            }}
+          />
+
+          <div className="timeline-markers">
+            {currentPlan.timeline.map((phase) => (
+              <div
+                key={phase.year}
+                className="timeline-marker"
+                onClick={() => setSelectedYear(phase.year)}
+              >
+                <div
+                  className={`timeline-marker-dot ${
+                    selectedYear >= phase.year ? "active" : ""
+                  } ${selectedYear === phase.year ? "selected" : ""}`}
+                />
+                <span
+                  className={`timeline-marker-year ${
+                    selectedYear === phase.year ? "selected" : ""
+                  }`}
+                >
+                  {phase.year}
+                </span>
+                <span className="timeline-marker-label">
+                  {getTimelineLabel(phase.year, t)}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <input
+            type="range"
+            min="2025"
+            max="2050"
+            step="5"
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+            className="timeline-slider-input"
+          />
+        </div>
+      </div>
+
       {/* Title overlay */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 30,
-          right: 30,
-          textAlign: "right",
-          color: "white",
-          fontFamily: "system-ui, -apple-system, sans-serif",
-        }}
-      >
-        <h1
-          style={{
-            margin: 0,
-            fontSize: "32px",
-            fontWeight: 700,
-            textShadow: "0 2px 20px rgba(0,0,0,0.5)",
-          }}
-        >
-          ZAGREB
-        </h1>
-        <p
-          style={{
-            margin: "4px 0 0 0",
-            fontSize: "14px",
-            opacity: 0.8,
-            letterSpacing: "4px",
-            textShadow: "0 2px 10px rgba(0,0,0,0.5)",
-          }}
-        >
-          FUTURE TRANSIT NETWORK
-        </p>
+      <div className="title-overlay">
+        <h1>{t.appTitle}</h1>
+        <p>{t.appSubtitle}</p>
       </div>
     </div>
   );

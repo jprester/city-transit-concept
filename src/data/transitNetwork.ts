@@ -825,3 +825,607 @@ export const allMetroLines = {
   type: "FeatureCollection" as const,
   features: [metroLineA, metroLineB, metroLineC],
 };
+
+// ============================================
+// TIMELINE - Construction Phases
+// ============================================
+
+// Segment definitions for progressive construction
+export interface LineSegment {
+  id: string;
+  name: string;
+  stations: string[]; // Station names in order
+  coordinates: number[][];
+}
+
+export interface TimelinePhase {
+  year: number;
+  label: string;
+  description: string;
+  elements: {
+    premetro?: "none" | "partial" | "full";
+    metroA?: "none" | "partial" | "full";
+    metroB?: "none" | "partial" | "full";
+    metroC?: "none" | "partial" | "full";
+    gondola?: "none" | "partial" | "full";
+    development?: "none" | "partial" | "full";
+  };
+  // Detailed segment visibility
+  segments?: {
+    metroA?: string[]; // Array of segment IDs that are operational
+    metroB?: string[];
+    metroC?: string[];
+    premetro?: string[];
+    gondola?: string[];
+  };
+}
+
+export type PlanType = "realistic" | "ambitious";
+
+export interface TransitPlan {
+  id: PlanType;
+  name: string;
+  description: string;
+  cost: string;
+  timeline: TimelinePhase[];
+}
+
+// ============================================
+// LINE SEGMENTS for Progressive Construction
+// ============================================
+
+// Metro Line A Segments
+export const metroASegments: Record<string, LineSegment> = {
+  "metro-a-south-1": {
+    id: "metro-a-south-1",
+    name: "Glavni kolodvor → Lanište",
+    stations: ["Glavni kolodvor", "Savski most", "Sopot", "Siget", "Lanište"],
+    coordinates: [
+      [STATION_GLAVNI_KOLODVOR.lng, STATION_GLAVNI_KOLODVOR.lat],
+      [STATION_SAVSKI_MOST.lng, STATION_SAVSKI_MOST.lat],
+      [STATION_SOPOT.lng, STATION_SOPOT.lat],
+      [STATION_SIGET.lng, STATION_SIGET.lat],
+      [STATION_LANISTE.lng, STATION_LANISTE.lat],
+    ],
+  },
+  "metro-a-south-2": {
+    id: "metro-a-south-2",
+    name: "Lanište → Airport",
+    stations: ["Lanište", "Buzin", "Airport"],
+    coordinates: [
+      [STATION_LANISTE.lng, STATION_LANISTE.lat],
+      [STATION_BUZIN.lng, STATION_BUZIN.lat],
+      [STATION_AIRPORT.lng, STATION_AIRPORT.lat],
+    ],
+  },
+  "metro-a-north": {
+    id: "metro-a-north",
+    name: "Glavni kolodvor → Sesvete",
+    stations: [
+      "Glavni kolodvor",
+      "Kvaternikov trg",
+      "Maksimirska",
+      "Dubrava",
+      "Dubec",
+      "Sesvete",
+    ],
+    coordinates: [
+      [STATION_GLAVNI_KOLODVOR.lng, STATION_GLAVNI_KOLODVOR.lat],
+      [STATION_KVATERNIKOV_TRG.lng, STATION_KVATERNIKOV_TRG.lat],
+      [STATION_MAKSIMIRSKA.lng, STATION_MAKSIMIRSKA.lat],
+      [STATION_DUBRAVA.lng, STATION_DUBRAVA.lat],
+      [STATION_DUBEC.lng, STATION_DUBEC.lat],
+      [STATION_SESVETE.lng, STATION_SESVETE.lat],
+    ],
+  },
+  "metro-a-velika-gorica": {
+    id: "metro-a-velika-gorica",
+    name: "Airport → Velika Gorica",
+    stations: ["Airport", "Velika Gorica"],
+    coordinates: [
+      [STATION_AIRPORT.lng, STATION_AIRPORT.lat],
+      [STATION_VELIKA_GORICA.lng, STATION_VELIKA_GORICA.lat],
+    ],
+  },
+};
+
+// Metro Line B Segments
+export const metroBSegments: Record<string, LineSegment> = {
+  "metro-b-east": {
+    id: "metro-b-east",
+    name: "Glavni kolodvor → Žitnjak",
+    stations: [
+      "Glavni kolodvor",
+      "Kvaternikov trg",
+      "Borongaj",
+      "Peščenica",
+      "Žitnjak",
+    ],
+    coordinates: [
+      [STATION_GLAVNI_KOLODVOR.lng, STATION_GLAVNI_KOLODVOR.lat],
+      [STATION_KVATERNIKOV_TRG.lng, STATION_KVATERNIKOV_TRG.lat],
+      [STATION_BORONGAJ.lng, STATION_BORONGAJ.lat],
+      [STATION_PESCENICA.lng, STATION_PESCENICA.lat],
+      [STATION_ZITNJAK.lng, STATION_ZITNJAK.lat],
+    ],
+  },
+  "metro-b-west": {
+    id: "metro-b-west",
+    name: "Glavni kolodvor → Podsused",
+    stations: [
+      "Glavni kolodvor",
+      "Tehnički muzej",
+      "Črnomerec",
+      "Vrapče",
+      "Gornje Vrapče",
+      "Podsused",
+    ],
+    coordinates: [
+      [STATION_GLAVNI_KOLODVOR.lng, STATION_GLAVNI_KOLODVOR.lat],
+      [STATION_TEHNICKI_MUZEJ.lng, STATION_TEHNICKI_MUZEJ.lat],
+      [STATION_CRNOMEREC.lng, STATION_CRNOMEREC.lat],
+      [STATION_VRAPCE.lng, STATION_VRAPCE.lat],
+      [STATION_GORNJE_VRAPCE.lng, STATION_GORNJE_VRAPCE.lat],
+      [STATION_PODSUSED.lng, STATION_PODSUSED.lat],
+    ],
+  },
+};
+
+// Metro Line C Segments
+export const metroCSegments: Record<string, LineSegment> = {
+  "metro-c-east": {
+    id: "metro-c-east",
+    name: "Glavni kolodvor → Ivanja Reka",
+    stations: ["Glavni kolodvor", "Borovje", "Žitnjak-jug", "Ivanja Reka"],
+    coordinates: [
+      [STATION_GLAVNI_KOLODVOR.lng, STATION_GLAVNI_KOLODVOR.lat],
+      [STATION_BOROVJE.lng, STATION_BOROVJE.lat],
+      [STATION_ZITNJAK_JUG.lng, STATION_ZITNJAK_JUG.lat],
+      [STATION_IVANJA_REKA.lng, STATION_IVANJA_REKA.lat],
+    ],
+  },
+  "metro-c-west": {
+    id: "metro-c-west",
+    name: "Glavni kolodvor → Jankomir",
+    stations: ["Glavni kolodvor", "Sava centar", "Jarun", "Prečko", "Jankomir"],
+    coordinates: [
+      [STATION_GLAVNI_KOLODVOR.lng, STATION_GLAVNI_KOLODVOR.lat],
+      [STATION_SAVA_CENTAR.lng, STATION_SAVA_CENTAR.lat],
+      [STATION_JARUN.lng, STATION_JARUN.lat],
+      [STATION_PRECKO.lng, STATION_PRECKO.lat],
+      [STATION_JANKOMIR.lng, STATION_JANKOMIR.lat],
+    ],
+  },
+};
+
+// Premetro Segments
+export const premetroSegments: Record<string, LineSegment> = {
+  "premetro-west": {
+    id: "premetro-west",
+    name: "Črnomerec → Britanski trg",
+    stations: [
+      "Črnomerec",
+      "Sveti Duh",
+      "Slovenska",
+      "Trg Franje Tuđmana",
+      "Britanski trg",
+    ],
+    coordinates: [
+      [STATION_CRNOMEREC.lng, STATION_CRNOMEREC.lat],
+      [STATION_SVETI_DUH.lng, STATION_SVETI_DUH.lat],
+      [STATION_SLOVENSKA.lng, STATION_SLOVENSKA.lat],
+      [STATION_TRG_FRANJO_TUDJMAN.lng, STATION_TRG_FRANJO_TUDJMAN.lat],
+      [STATION_BRITANSKI_TRG.lng, STATION_BRITANSKI_TRG.lat],
+    ],
+  },
+  "premetro-east": {
+    id: "premetro-east",
+    name: "Britanski trg → Savski most",
+    stations: [
+      "Britanski trg",
+      "Frankopanska",
+      "Jelačić",
+      "Glavni kolodvor",
+      "Savski most",
+    ],
+    coordinates: [
+      [STATION_BRITANSKI_TRG.lng, STATION_BRITANSKI_TRG.lat],
+      [STATION_FRANKOPANSKA.lng, STATION_FRANKOPANSKA.lat],
+      [STATION_JELACIC.lng, STATION_JELACIC.lat],
+      [STATION_GLAVNI_KOLODVOR.lng, STATION_GLAVNI_KOLODVOR.lat],
+      [STATION_SAVSKI_MOST.lng, STATION_SAVSKI_MOST.lat],
+    ],
+  },
+};
+
+// Gondola Segments
+export const gondolaSegments: Record<string, LineSegment> = {
+  "gondola-west": {
+    id: "gondola-west",
+    name: "Jarun North → Sava Beach",
+    stations: ["Jarun North", "Jarun", "Sava Beach"],
+    coordinates: [
+      [STATION_JARUN_NORTH.lng, STATION_JARUN_NORTH.lat],
+      [STATION_JARUN.lng, STATION_JARUN.lat],
+      [STATION_SAVA_BEACH.lng, STATION_SAVA_BEACH.lat],
+    ],
+  },
+  "gondola-east": {
+    id: "gondola-east",
+    name: "Sava Beach → Novi Zagreb Hub",
+    stations: [
+      "Sava Beach",
+      "Sava Centar",
+      "Museum District",
+      "Bundek",
+      "Novi Zagreb Hub",
+    ],
+    coordinates: [
+      [STATION_SAVA_BEACH.lng, STATION_SAVA_BEACH.lat],
+      [STATION_SAVA_CENTAR.lng, STATION_SAVA_CENTAR.lat],
+      [STATION_MUSEUM_DISTRICT.lng, STATION_MUSEUM_DISTRICT.lat],
+      [STATION_BUNDEK.lng, STATION_BUNDEK.lat],
+      [STATION_NOVI_ZAGREB_HUB.lng, STATION_NOVI_ZAGREB_HUB.lat],
+    ],
+  },
+};
+
+// Realistic Plan: Premetro + Metro A + Gondola + Development (€3-4.5B)
+const realisticPlan: TransitPlan = {
+  id: "realistic",
+  name: "Realistic Plan",
+  description: "Achievable hybrid system - Premetro, one metro line, gondola",
+  cost: "€3-4.5 billion over 20 years",
+  timeline: [
+    {
+      year: 2025,
+      label: "Present",
+      description: "Planning phase - Initial designs underway",
+      elements: {
+        premetro: "none",
+        metroA: "none",
+        metroB: "none",
+        metroC: "none",
+        gondola: "none",
+        development: "none",
+      },
+      segments: {
+        metroA: [],
+        premetro: [],
+        gondola: [],
+      },
+    },
+    {
+      year: 2030,
+      label: "Early Phase",
+      description: "Western premetro tunnel under construction",
+      elements: {
+        premetro: "partial",
+        metroA: "none",
+        metroB: "none",
+        metroC: "none",
+        gondola: "none",
+        development: "partial",
+      },
+      segments: {
+        metroA: [],
+        premetro: ["premetro-west"],
+        gondola: [],
+      },
+    },
+    {
+      year: 2035,
+      label: "Mid Phase",
+      description: "Premetro complete, Metro A south segment opens",
+      elements: {
+        premetro: "full",
+        metroA: "partial",
+        metroB: "none",
+        metroC: "none",
+        gondola: "partial",
+        development: "partial",
+      },
+      segments: {
+        metroA: ["metro-a-south-1"],
+        premetro: ["premetro-west", "premetro-east"],
+        gondola: ["gondola-west"],
+      },
+    },
+    {
+      year: 2040,
+      label: "Advanced",
+      description: "Metro A reaches Airport, Gondola fully operational",
+      elements: {
+        premetro: "full",
+        metroA: "partial",
+        metroB: "none",
+        metroC: "none",
+        gondola: "full",
+        development: "partial",
+      },
+      segments: {
+        metroA: ["metro-a-south-1", "metro-a-south-2"],
+        premetro: ["premetro-west", "premetro-east"],
+        gondola: ["gondola-west", "gondola-east"],
+      },
+    },
+    {
+      year: 2045,
+      label: "Mature",
+      description: "Northern Metro A extension opens, development zones active",
+      elements: {
+        premetro: "full",
+        metroA: "partial",
+        metroB: "none",
+        metroC: "none",
+        gondola: "full",
+        development: "full",
+      },
+      segments: {
+        metroA: ["metro-a-south-1", "metro-a-south-2", "metro-a-north"],
+        premetro: ["premetro-west", "premetro-east"],
+        gondola: ["gondola-west", "gondola-east"],
+      },
+    },
+    {
+      year: 2050,
+      label: "Complete",
+      description: "Full Metro A line to Sesvete operational",
+      elements: {
+        premetro: "full",
+        metroA: "full",
+        metroB: "none",
+        metroC: "none",
+        gondola: "full",
+        development: "full",
+      },
+      segments: {
+        metroA: [
+          "metro-a-south-1",
+          "metro-a-south-2",
+          "metro-a-north",
+          "metro-a-velika-gorica",
+        ],
+        premetro: ["premetro-west", "premetro-east"],
+        gondola: ["gondola-west", "gondola-east"],
+      },
+    },
+  ],
+};
+
+// Ambitious Plan: Full 3-line Metro + Premetro + Gondola (€8-12B)
+const ambitiousPlan: TransitPlan = {
+  id: "ambitious",
+  name: "Ambitious Plan",
+  description: "Comprehensive metro network with three full lines",
+  cost: "€8-12 billion over 25 years",
+  timeline: [
+    {
+      year: 2025,
+      label: "Present",
+      description: "Planning phase - Comprehensive network design",
+      elements: {
+        premetro: "none",
+        metroA: "none",
+        metroB: "none",
+        metroC: "none",
+        gondola: "none",
+        development: "none",
+      },
+      segments: {
+        metroA: [],
+        metroB: [],
+        metroC: [],
+        premetro: [],
+        gondola: [],
+      },
+    },
+    {
+      year: 2030,
+      label: "Phase 1",
+      description: "Premetro + Metro A south segment construction",
+      elements: {
+        premetro: "partial",
+        metroA: "partial",
+        metroB: "none",
+        metroC: "none",
+        gondola: "none",
+        development: "partial",
+      },
+      segments: {
+        metroA: ["metro-a-south-1"],
+        metroB: [],
+        metroC: [],
+        premetro: ["premetro-west", "premetro-east"],
+        gondola: [],
+      },
+    },
+    {
+      year: 2035,
+      label: "Phase 2",
+      description: "Metro A complete, Line B east-west opens",
+      elements: {
+        premetro: "full",
+        metroA: "full",
+        metroB: "partial",
+        metroC: "none",
+        gondola: "partial",
+        development: "partial",
+      },
+      segments: {
+        metroA: [
+          "metro-a-south-1",
+          "metro-a-south-2",
+          "metro-a-north",
+          "metro-a-velika-gorica",
+        ],
+        metroB: ["metro-b-east"],
+        metroC: [],
+        premetro: ["premetro-west", "premetro-east"],
+        gondola: ["gondola-west"],
+      },
+    },
+    {
+      year: 2040,
+      label: "Phase 3",
+      description: "Metro B complete, Gondola fully operational",
+      elements: {
+        premetro: "full",
+        metroA: "full",
+        metroB: "full",
+        metroC: "none",
+        gondola: "full",
+        development: "partial",
+      },
+      segments: {
+        metroA: [
+          "metro-a-south-1",
+          "metro-a-south-2",
+          "metro-a-north",
+          "metro-a-velika-gorica",
+        ],
+        metroB: ["metro-b-east", "metro-b-west"],
+        metroC: [],
+        premetro: ["premetro-west", "premetro-east"],
+        gondola: ["gondola-west", "gondola-east"],
+      },
+    },
+    {
+      year: 2045,
+      label: "Phase 4",
+      description: "Metro C east segment under construction",
+      elements: {
+        premetro: "full",
+        metroA: "full",
+        metroB: "full",
+        metroC: "partial",
+        gondola: "full",
+        development: "full",
+      },
+      segments: {
+        metroA: [
+          "metro-a-south-1",
+          "metro-a-south-2",
+          "metro-a-north",
+          "metro-a-velika-gorica",
+        ],
+        metroB: ["metro-b-east", "metro-b-west"],
+        metroC: ["metro-c-east"],
+        premetro: ["premetro-west", "premetro-east"],
+        gondola: ["gondola-west", "gondola-east"],
+      },
+    },
+    {
+      year: 2050,
+      label: "Complete",
+      description: "Full 3-line metro network operational",
+      elements: {
+        premetro: "full",
+        metroA: "full",
+        metroB: "full",
+        metroC: "full",
+        gondola: "full",
+        development: "full",
+      },
+      segments: {
+        metroA: [
+          "metro-a-south-1",
+          "metro-a-south-2",
+          "metro-a-north",
+          "metro-a-velika-gorica",
+        ],
+        metroB: ["metro-b-east", "metro-b-west"],
+        metroC: ["metro-c-east", "metro-c-west"],
+        premetro: ["premetro-west", "premetro-east"],
+        gondola: ["gondola-west", "gondola-east"],
+      },
+    },
+  ],
+};
+
+export const transitPlans: Record<PlanType, TransitPlan> = {
+  realistic: realisticPlan,
+  ambitious: ambitiousPlan,
+};
+
+// Legacy export for backwards compatibility
+export const timelinePhases = realisticPlan.timeline;
+
+// Get the active elements for a given year and plan
+export function getActiveElements(
+  year: number,
+  planType: PlanType = "realistic"
+): TimelinePhase["elements"] {
+  const plan = transitPlans[planType];
+  const phase = [...plan.timeline].reverse().find((p) => p.year <= year);
+  return phase?.elements || plan.timeline[0].elements;
+}
+
+// Get active segments for a given year and plan
+export function getActiveSegments(
+  year: number,
+  planType: PlanType = "realistic"
+): TimelinePhase["segments"] {
+  const plan = transitPlans[planType];
+  const phase = [...plan.timeline].reverse().find((p) => p.year <= year);
+  return (
+    phase?.segments || {
+      metroA: [],
+      metroB: [],
+      metroC: [],
+      premetro: [],
+      gondola: [],
+    }
+  );
+}
+
+// Get list of active station names based on active segments
+export function getActiveStationNames(
+  year: number,
+  planType: PlanType = "realistic"
+): string[] {
+  const activeSegments = getActiveSegments(year, planType);
+  const activeStations = new Set<string>();
+
+  // Add stations from active Metro A segments
+  activeSegments?.metroA?.forEach((segmentId) => {
+    const segment = metroASegments[segmentId];
+    if (segment) {
+      segment.stations.forEach((station) => activeStations.add(station));
+    }
+  });
+
+  // Add stations from active Metro B segments
+  activeSegments?.metroB?.forEach((segmentId) => {
+    const segment = metroBSegments[segmentId];
+    if (segment) {
+      segment.stations.forEach((station) => activeStations.add(station));
+    }
+  });
+
+  // Add stations from active Metro C segments
+  activeSegments?.metroC?.forEach((segmentId) => {
+    const segment = metroCSegments[segmentId];
+    if (segment) {
+      segment.stations.forEach((station) => activeStations.add(station));
+    }
+  });
+
+  // Add stations from active Premetro segments
+  activeSegments?.premetro?.forEach((segmentId) => {
+    const segment = premetroSegments[segmentId];
+    if (segment) {
+      segment.stations.forEach((station) => activeStations.add(station));
+    }
+  });
+
+  // Add stations from active Gondola segments
+  activeSegments?.gondola?.forEach((segmentId) => {
+    const segment = gondolaSegments[segmentId];
+    if (segment) {
+      segment.stations.forEach((station) => activeStations.add(station));
+    }
+  });
+
+  return Array.from(activeStations);
+}
