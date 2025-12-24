@@ -66,6 +66,16 @@ export interface Translations {
   phase2: string;
   phase3: string;
   phase4: string;
+
+  // Info panel
+  infoPanelTitle: string;
+  overviewTitle: string;
+  overviewRealistic: string;
+  overviewAmbitious: string;
+  reasoningTitle: string;
+  reasoningRealistic: string;
+  reasoningAmbitious: string;
+  timelineDetailsTitle: string;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -145,6 +155,20 @@ export const translations: Record<Language, Translations> = {
     phase2: "Faza 2",
     phase3: "Faza 3",
     phase4: "Faza 4",
+
+    // Info panel
+    infoPanelTitle: "O projektu",
+    overviewTitle: "Pregled",
+    overviewRealistic:
+      "Realistični plan predstavlja uravnotežen pristup modernizaciji javnog prijevoza u Zagrebu. Kombinirajući premetro (lakši podzemni sustav), jednu kompletnu metro liniju A, te gondolu preko rijeke Save, ovaj plan omogućuje značajno poboljšanje povezanosti grada bez prekomjernih troškova. Fokus je na povezivanju ključnih točaka: centra grada, zračne luke, i južnih područja poput Velike Gorice.",
+    overviewAmbitious:
+      "Ambiciozni plan predviđa potpunu metro mrežu od tri linije koja bi transformirala Zagreb u grad s pravim metropolitanskim javnim prijevozom. Ovaj sustav bi pokrivao sve ključne pravce: istok-zapad (Linija B), sjever-jug (Linija A), te dodatni pravac prema Dubravi (Linija C). Gondola i premetro dopunjuju mrežu, omogućujući brzo i učinkovito kretanje kroz cijeli grad.",
+    reasoningTitle: "Obrazloženje",
+    reasoningRealistic:
+      "Zagreb trenutno nema podzemni brzi tranzitni sustav, što dovodi do prenatrpanosti tramvajskih linija i ovisnosti o automobilima. Realistični plan odgovara na ove izazove implementacijom premetro tunela koji koristi postojeće tramvajske trase, čime se smanjuju troškovi i vrijeme gradnje. Metro linija A povezuje najfrekventnije koridore: od Sesveta kroz centar do Velike Gorice i zračne luke. Gondola preko Save nudi inovativno rješenje za brzu povezanost između južnih i zapadnih dijelova grada.",
+    reasoningAmbitious:
+      "Kako Zagreb raste, potreba za sveobuhvatnom metro mrežom postaje sve očitija. Ambiciozni plan temelji se na dugoročnoj viziji grada s milijun stanovnika i razvijenim javnim prijevozom. Tri metro linije stvaraju mrežni efekt gdje se linije međusobno podupiru i omogućuju brže putovanje sa presjedanjem. Ovaj sustav bi smanjio ovisnost o automobilima, potaknuo održivi urbani razvoj, i pozicionirao Zagreb kao modernu europsku metropolu. Iako skuplji, dugoročna korist opravdava investiciju kroz smanjene troškove cestovne infrastrukture i poboljšanu kvalitetu života.",
+    timelineDetailsTitle: "Faze gradnje",
   },
   en: {
     // App title
@@ -221,5 +245,19 @@ export const translations: Record<Language, Translations> = {
     phase2: "Phase 2",
     phase3: "Phase 3",
     phase4: "Phase 4",
+
+    // Info panel
+    infoPanelTitle: "About the Project",
+    overviewTitle: "Overview",
+    overviewRealistic:
+      "The Realistic Plan represents a balanced approach to modernizing Zagreb's public transport. By combining premetro (light underground system), one complete metro line A, and a gondola across the Sava River, this plan enables significant improvement in city connectivity without excessive costs. The focus is on connecting key points: the city center, the airport, and southern areas like Velika Gorica.",
+    overviewAmbitious:
+      "The Ambitious Plan envisions a complete three-line metro network that would transform Zagreb into a city with true metropolitan public transport. This system would cover all key directions: east-west (Line B), north-south (Line A), and an additional route to Dubrava (Line C). The gondola and premetro complement the network, enabling fast and efficient movement throughout the city.",
+    reasoningTitle: "Rationale",
+    reasoningRealistic:
+      "Zagreb currently lacks an underground rapid transit system, leading to overcrowded tram lines and car dependency. The Realistic Plan addresses these challenges by implementing a premetro tunnel that uses existing tram routes, reducing costs and construction time. Metro Line A connects the busiest corridors: from Sesvete through the center to Velika Gorica and the airport. The Sava gondola offers an innovative solution for quick connectivity between the southern and western parts of the city.",
+    reasoningAmbitious:
+      "As Zagreb grows, the need for a comprehensive metro network becomes increasingly evident. The Ambitious Plan is based on a long-term vision of a city with one million inhabitants and developed public transport. Three metro lines create a network effect where lines support each other and enable faster travel with transfers. This system would reduce car dependency, promote sustainable urban development, and position Zagreb as a modern European metropolis. Although more expensive, the long-term benefits justify the investment through reduced road infrastructure costs and improved quality of life.",
+    timelineDetailsTitle: "Construction Phases",
   },
 };

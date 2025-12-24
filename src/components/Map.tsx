@@ -66,9 +66,12 @@ export default function Map() {
   const { language, setLanguage, t } = useLanguage();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const infoPanelRef = useRef<HTMLDivElement>(null);
+  const timelineRefs = useRef<Record<number, HTMLDivElement | null>>({});
   const [loaded, setLoaded] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<PlanType>("realistic");
   const [selectedYear, setSelectedYear] = useState(2050); // Default to showing everything
+  const [infoPanelMinimized, setInfoPanelMinimized] = useState(false);
   // Get current construction phase for active elements
   const activeElements = useMemo(
     () => getActiveElements(selectedYear, selectedPlan),
@@ -744,6 +747,18 @@ export default function Map() {
     });
   };
 
+  const scrollToTimelineSection = (year: number) => {
+    const element = timelineRefs.current[year];
+    if (element && infoPanelRef.current) {
+      const container = infoPanelRef.current;
+      const elementTop = element.offsetTop - container.offsetTop;
+      container.scrollTo({
+        top: elementTop - 20, // 20px offset for padding
+        behavior: "smooth",
+      });
+    }
+  };
+
   return (
     <div className="map-container">
       <div ref={mapContainer} className="map-canvas" />
@@ -1006,7 +1021,10 @@ export default function Map() {
               <div
                 key={phase.year}
                 className="timeline-marker"
-                onClick={() => setSelectedYear(phase.year)}
+                onClick={() => {
+                  setSelectedYear(phase.year);
+                  scrollToTimelineSection(phase.year);
+                }}
               >
                 <div
                   className={`timeline-marker-dot ${
@@ -1043,6 +1061,65 @@ export default function Map() {
       <div className="title-overlay">
         <h1>{t.appTitle}</h1>
         <p>{t.appSubtitle}</p>
+      </div>
+
+      {/* Info Panel */}
+      <div className={`info-panel ${infoPanelMinimized ? "minimized" : ""}`}>
+        <button
+          className="info-panel-toggle"
+          onClick={() => setInfoPanelMinimized(!infoPanelMinimized)}
+          title={infoPanelMinimized ? "Show info panel" : "Hide info panel"}
+        >
+          {infoPanelMinimized ? "📖" : "✕"}
+        </button>
+
+        {!infoPanelMinimized && (
+          <div ref={infoPanelRef} className="info-panel-content">
+            <h2 className="info-panel-title">{t.infoPanelTitle}</h2>
+
+            <section className="info-section">
+              <h3>{t.overviewTitle}</h3>
+              <p>
+                {selectedPlan === "realistic"
+                  ? t.overviewRealistic
+                  : t.overviewAmbitious}
+              </p>
+            </section>
+
+            <section className="info-section">
+              <h3>{t.reasoningTitle}</h3>
+              <p>
+                {selectedPlan === "realistic"
+                  ? t.reasoningRealistic
+                  : t.reasoningAmbitious}
+              </p>
+            </section>
+
+            <section className="info-section">
+              <h3>{t.timelineDetailsTitle}</h3>
+
+              {currentPlan.timeline.map((phase) => (
+                <div
+                  key={phase.year}
+                  ref={(el) => {
+                    timelineRefs.current[phase.year] = el;
+                  }}
+                  className={`timeline-detail-section ${
+                    selectedYear === phase.year ? "active" : ""
+                  }`}
+                  onClick={() => {
+                    setSelectedYear(phase.year);
+                  }}
+                >
+                  <h4>
+                    {phase.year} - {getTimelineLabel(phase.year, t)}
+                  </h4>
+                  <p>{getTimelineDescription(phase.year, selectedPlan, t)}</p>
+                </div>
+              ))}
+            </section>
+          </div>
+        )}
       </div>
     </div>
   );
