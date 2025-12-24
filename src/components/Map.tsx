@@ -1021,10 +1021,12 @@ export default function Map() {
       </div>
 
       {/* Title overlay */}
-      <div className="title-overlay">
-        <h1>{t.appTitle}</h1>
-        <p>{t.appSubtitle}</p>
-      </div>
+      {/* <div className="title-overlay">
+        <div>
+          <h1>{t.appTitle}</h1>
+          <p>{t.appSubtitle}</p>
+        </div>
+      </div> */}
 
       {/* Info Panel */}
       <div className={`info-panel ${infoPanelMinimized ? "minimized" : ""}`}>
