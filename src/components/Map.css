@@ -149,85 +149,42 @@
   opacity: 0.4;
 }
 
-.layer-checkbox {
-  width: 16px;
-  height: 16px;
-  border-radius: 3px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  background: transparent;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Status Indicator - replaces checkbox */
+.layer-status-indicator {
+  font-size: 14px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
 }
 
-.layer-checkbox.active {
-  border-width: 2px;
+/* Colored indicators for each line type */
+.layer-status-indicator.metro-a {
+  color: #2563eb;
 }
 
-.layer-checkbox.active.metro-a {
-  border-color: #2563eb;
-  background: #2563eb;
+.layer-status-indicator.metro-b {
+  color: #dc2626;
 }
 
-.layer-checkbox.active.metro-b {
-  border-color: #dc2626;
-  background: #dc2626;
+.layer-status-indicator.metro-c {
+  color: #16a34a;
 }
 
-.layer-checkbox.active.metro-c {
-  border-color: #16a34a;
-  background: #16a34a;
+.layer-status-indicator.premetro {
+  color: #8b5cf6;
 }
 
-.layer-checkbox.active.premetro {
-  border-color: #8b5cf6;
-  background: #8b5cf6;
+.layer-status-indicator.gondola {
+  color: #f59e0b;
 }
 
-.layer-checkbox.active.gondola {
-  border-color: #f59e0b;
-  background: #f59e0b;
+.layer-status-indicator.development {
+  color: #3b82f6;
 }
 
-.layer-checkbox.active.development {
-  border-color: #3b82f6;
-  background: #3b82f6;
-}
-
-.layer-checkbox-icon {
-  color: white;
-  font-size: 10px;
-}
-
-.layer-color-indicator {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
-  transition: opacity 0.2s;
-}
-
-.layer-color-indicator.metro-a {
-  background: #2563eb;
-}
-
-.layer-color-indicator.metro-b {
-  background: #dc2626;
-}
-
-.layer-color-indicator.metro-c {
-  background: #16a34a;
-}
-
-.layer-color-indicator.premetro {
-  background: #8b5cf6;
-}
-
-.layer-color-indicator.gondola {
-  background: #f59e0b;
-}
-
-.layer-color-indicator.partial {
-  opacity: 0.5;
+/* Dim the indicator when not active */
+.layer-status-indicator.none {
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .layer-name {
@@ -453,7 +410,7 @@
   background: rgba(17, 24, 39, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 12px;
-  padding: 24px;
+  padding: 48px 24px 14px 24px;
   color: white;
   font-family: system-ui, -apple-system, sans-serif;
   border: 1px solid rgba(255, 255, 255, 0.1);

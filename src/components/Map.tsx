@@ -825,22 +825,15 @@ export default function Map() {
 
         <div className="layer-list">
           <div className={`layer-item ${visibility.metroA ? "" : "inactive"}`}>
-            <div
-              className={`layer-checkbox ${
-                visibility.metroA ? "active metro-a" : ""
-              }`}
-            >
-              {visibility.metroA && (
-                <span className="layer-checkbox-icon">
-                  {activeElements.metroA === "partial" ? "🚧" : "✓"}
-                </span>
-              )}
-            </div>
             <span
-              className={`layer-color-indicator metro-a ${
-                activeElements.metroA === "partial" ? "partial" : ""
-              }`}
-            />
+              className={`layer-status-indicator metro-a ${activeElements.metroA}`}
+            >
+              {activeElements.metroA === "partial"
+                ? "🚧"
+                : activeElements.metroA === "full"
+                ? "●"
+                : "○"}
+            </span>
             <span className="layer-name">
               {t.metroLineA}
               {activeElements.metroA === "partial" && (
@@ -850,22 +843,15 @@ export default function Map() {
           </div>
 
           <div className={`layer-item ${visibility.metroB ? "" : "inactive"}`}>
-            <div
-              className={`layer-checkbox ${
-                visibility.metroB ? "active metro-b" : ""
-              }`}
-            >
-              {visibility.metroB && (
-                <span className="layer-checkbox-icon">
-                  {activeElements.metroB === "partial" ? "🚧" : "✓"}
-                </span>
-              )}
-            </div>
             <span
-              className={`layer-color-indicator metro-b ${
-                activeElements.metroB === "partial" ? "partial" : ""
-              }`}
-            />
+              className={`layer-status-indicator metro-b ${activeElements.metroB}`}
+            >
+              {activeElements.metroB === "partial"
+                ? "🚧"
+                : activeElements.metroB === "full"
+                ? "●"
+                : "○"}
+            </span>
             <span className="layer-name">
               {t.metroLineB}
               {activeElements.metroB === "partial" && (
@@ -875,22 +861,15 @@ export default function Map() {
           </div>
 
           <div className={`layer-item ${visibility.metroC ? "" : "inactive"}`}>
-            <div
-              className={`layer-checkbox ${
-                visibility.metroC ? "active metro-c" : ""
-              }`}
-            >
-              {visibility.metroC && (
-                <span className="layer-checkbox-icon">
-                  {activeElements.metroC === "partial" ? "🚧" : "✓"}
-                </span>
-              )}
-            </div>
             <span
-              className={`layer-color-indicator metro-c ${
-                activeElements.metroC === "partial" ? "partial" : ""
-              }`}
-            />
+              className={`layer-status-indicator metro-c ${activeElements.metroC}`}
+            >
+              {activeElements.metroC === "partial"
+                ? "🚧"
+                : activeElements.metroC === "full"
+                ? "●"
+                : "○"}
+            </span>
             <span className="layer-name">
               {t.metroLineC}
               {activeElements.metroC === "partial" && (
@@ -902,22 +881,15 @@ export default function Map() {
           <div
             className={`layer-item ${visibility.premetro ? "" : "inactive"}`}
           >
-            <div
-              className={`layer-checkbox ${
-                visibility.premetro ? "active premetro" : ""
-              }`}
-            >
-              {visibility.premetro && (
-                <span className="layer-checkbox-icon">
-                  {activeElements.premetro === "partial" ? "🚧" : "✓"}
-                </span>
-              )}
-            </div>
             <span
-              className={`layer-color-indicator premetro ${
-                activeElements.premetro === "partial" ? "partial" : ""
-              }`}
-            />
+              className={`layer-status-indicator premetro ${activeElements.premetro}`}
+            >
+              {activeElements.premetro === "partial"
+                ? "🚧"
+                : activeElements.premetro === "full"
+                ? "●"
+                : "○"}
+            </span>
             <span className="layer-name">
               {t.premetroTunnel}
               {activeElements.premetro === "partial" && (
@@ -927,22 +899,15 @@ export default function Map() {
           </div>
 
           <div className={`layer-item ${visibility.gondola ? "" : "inactive"}`}>
-            <div
-              className={`layer-checkbox ${
-                visibility.gondola ? "active gondola" : ""
-              }`}
-            >
-              {visibility.gondola && (
-                <span className="layer-checkbox-icon">
-                  {activeElements.gondola === "partial" ? "🚧" : "✓"}
-                </span>
-              )}
-            </div>
             <span
-              className={`layer-color-indicator gondola ${
-                activeElements.gondola === "partial" ? "partial" : ""
-              }`}
-            />
+              className={`layer-status-indicator gondola ${activeElements.gondola}`}
+            >
+              {activeElements.gondola === "partial"
+                ? "🚧"
+                : activeElements.gondola === "full"
+                ? "●"
+                : "○"}
+            </span>
             <span className="layer-name">
               {t.savaSkyway}
               {activeElements.gondola === "partial" && (
@@ -954,17 +919,15 @@ export default function Map() {
           <div
             className={`layer-item ${visibility.development ? "" : "inactive"}`}
           >
-            <div
-              className={`layer-checkbox ${
-                visibility.development ? "active development" : ""
-              }`}
+            <span
+              className={`layer-status-indicator development ${activeElements.development}`}
             >
-              {visibility.development && (
-                <span className="layer-checkbox-icon">
-                  {activeElements.development === "partial" ? "🚧" : "✓"}
-                </span>
-              )}
-            </div>
+              {activeElements.development === "partial"
+                ? "🚧"
+                : activeElements.development === "full"
+                ? "●"
+                : "○"}
+            </span>
             <span className="layer-name">
               {t.developmentZones}
               {activeElements.development === "partial" && (
