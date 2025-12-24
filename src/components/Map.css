@@ -231,6 +231,38 @@
   gap: 10px;
 }
 
+/* Interactive Checkbox for Settings */
+.layer-item.clickable {
+  cursor: pointer;
+}
+
+.layer-item.clickable:hover {
+  opacity: 0.8;
+}
+
+.layer-checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.layer-checkbox.active {
+  border-color: #3b82f6;
+  background: #3b82f6;
+}
+
+.layer-checkbox-icon {
+  color: white;
+  font-size: 10px;
+}
+
 /* Legend */
 .legend {
   margin-top: 16px;
