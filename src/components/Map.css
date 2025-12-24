@@ -145,6 +145,19 @@
   transition: opacity 0.2s;
 }
 
+.layer-item.clickable {
+  cursor: pointer;
+}
+
+.layer-item.clickable:hover {
+  background: rgba(255, 255, 255, 0.05);
+  margin-left: -4px;
+  margin-right: -4px;
+  padding-left: 4px;
+  padding-right: 4px;
+  border-radius: 4px;
+}
+
 .layer-item.inactive {
   opacity: 0.4;
 }

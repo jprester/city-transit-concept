@@ -30,6 +30,7 @@ export interface Translations {
   premetroTunnel: string;
   savaSkyway: string;
   developmentZones: string;
+  buildings3d: string;
 
   // Construction status
   building: string;
@@ -110,6 +111,7 @@ export const translations: Record<Language, Translations> = {
     premetroTunnel: "🚇 Premetro tunel",
     savaSkyway: "🚡 Sava Skyway",
     developmentZones: "🏗️ Razvojne zone",
+    buildings3d: "🏢 3D zgrade",
 
     // Construction status
     building: "u gradnji",
@@ -202,6 +204,7 @@ export const translations: Record<Language, Translations> = {
     premetroTunnel: "🚇 Premetro Tunnel",
     savaSkyway: "🚡 Sava Skyway",
     developmentZones: "🏗️ Development Zones",
+    buildings3d: "🏢 3D Buildings",
 
     // Construction status
     building: "building",
