@@ -246,10 +246,6 @@
   cursor: pointer;
 }
 
-.layer-item.clickable:hover {
-  opacity: 0.8;
-}
-
 .layer-checkbox {
   width: 16px;
   height: 16px;
