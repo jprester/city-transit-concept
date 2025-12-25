@@ -24,10 +24,10 @@ Adds depth and realism to the horizon
 
 4. Navigation Controls
 
-Top-right corner: Zoom buttons, compass, and pitch control
+Bottom-right corner: Zoom buttons, compass, and pitch control
 Click and drag the compass to rotate the view
 Use the pitch slider to tilt between flat and 3D views
-Bottom-right: Scale bar in meters
+Bottom-left: Scale bar in meters
 
 How to Use the 3D View
 Once running:
