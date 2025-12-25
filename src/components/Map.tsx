@@ -622,11 +622,11 @@ export default function Map() {
           showZoom: true,
           showCompass: true,
         }),
-        "top-right"
+        "bottom-right"
       );
 
       // Add scale control
-      m.addControl(new mapboxgl.ScaleControl(), "bottom-right");
+      m.addControl(new mapboxgl.ScaleControl(), "bottom-left");
 
       setLoaded(true);
     });

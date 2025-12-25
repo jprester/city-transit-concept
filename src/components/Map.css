@@ -10,6 +10,17 @@
   height: 100%;
 }
 
+/* Mapbox Controls Positioning - move away from info panel and timeline */
+.map-container .mapboxgl-ctrl-bottom-right {
+  bottom: 20px;
+  right: 32px;
+  left: 0; /* Clear the info panel (380px width + 20px margin + buffer) */
+}
+
+.map-container .mapboxgl-ctrl-bottom-left {
+  bottom: 100px;
+}
+
 /* Control Panel */
 .control-panel {
   position: absolute;
@@ -471,7 +482,7 @@
 .info-panel {
   position: absolute;
   top: 20px;
-  right: 20px;
+  right: 40px;
   width: 380px;
   max-height: calc(100vh - 40px);
   background: rgba(17, 24, 39, 0.95);
@@ -524,7 +535,7 @@
 }
 
 .info-panel-content {
-  max-height: calc(100vh - 88px);
+  max-height: calc(80vh - 88px);
   overflow-y: auto;
   padding-right: 8px;
   margin-right: -8px;
