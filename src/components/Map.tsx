@@ -36,6 +36,7 @@ interface LayerVisibility {
   gondola: boolean;
   stations: boolean;
   development: boolean;
+  buildings3d: boolean;
 }
 
 // Helper function to get translated timeline description
@@ -72,11 +73,15 @@ export default function Map() {
   const [selectedPlan, setSelectedPlan] = useState<PlanType>("realistic");
   const [selectedYear, setSelectedYear] = useState(2050); // Default to showing everything
   const [infoPanelMinimized, setInfoPanelMinimized] = useState(false);
+  const [mode3dEnabled, setMode3dEnabled] = useState(false); // 3D terrain/fog off by default to save memory
+  const [buildings3dEnabled, setBuildings3dEnabled] = useState(true);
+
   // Get current construction phase for active elements
   const activeElements = useMemo(
     () => getActiveElements(selectedYear, selectedPlan),
     [selectedYear, selectedPlan]
   );
+
   const visibility = useMemo<LayerVisibility>(
     () => ({
       metroA: activeElements.metroA !== "none",
@@ -89,8 +94,9 @@ export default function Map() {
         activeElements.metroB !== "none" ||
         activeElements.metroC !== "none",
       development: activeElements.development !== "none",
+      buildings3d: buildings3dEnabled,
     }),
-    [activeElements]
+    [activeElements, buildings3dEnabled]
   );
 
   const currentPlan = transitPlans[selectedPlan];
@@ -166,6 +172,14 @@ export default function Map() {
 
     map.current.on("load", () => {
       const m = map.current!;
+
+      // Add DEM source for 3D terrain
+      m.addSource("mapbox-dem", {
+        type: "raster-dem",
+        url: "mapbox://mapbox.mapbox-terrain-dem-v1",
+        tileSize: 512,
+        maxzoom: 14,
+      });
 
       // Add development zones (polygons)
       m.addSource("development-zones", {
@@ -551,6 +565,69 @@ export default function Map() {
         m.getCanvas().style.cursor = "";
       });
 
+      // Add 3D buildings layer (terrain and fog are controlled by toggle)
+      const layers = m.getStyle().layers;
+      const labelLayerId = layers?.find(
+        (layer) => layer.type === "symbol" && layer.layout?.["text-field"]
+      )?.id;
+
+      m.addLayer(
+        {
+          id: "3d-buildings",
+          source: "composite",
+          "source-layer": "building",
+          filter: ["==", "extrude", "true"],
+          type: "fill-extrusion",
+          minzoom: 13,
+          paint: {
+            "fill-extrusion-color": [
+              "interpolate",
+              ["linear"],
+              ["get", "height"],
+              0,
+              "#6b7280",
+              50,
+              "#9ca3af",
+              100,
+              "#d1d5db",
+            ],
+            "fill-extrusion-height": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              13,
+              0,
+              13.05,
+              ["get", "height"],
+            ],
+            "fill-extrusion-base": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              13,
+              0,
+              13.05,
+              ["get", "min_height"],
+            ],
+            "fill-extrusion-opacity": 0.7,
+          },
+        },
+        labelLayerId
+      );
+
+      // Add navigation controls
+      m.addControl(
+        new mapboxgl.NavigationControl({
+          visualizePitch: true,
+          showZoom: true,
+          showCompass: true,
+        }),
+        "bottom-right"
+      );
+
+      // Add scale control
+      m.addControl(new mapboxgl.ScaleControl(), "bottom-left");
+
       setLoaded(true);
     });
 
@@ -576,6 +653,49 @@ export default function Map() {
       }
     }
   }, [activeElements, loaded]);
+
+  // Handle 3D mode (terrain + fog)
+  useEffect(() => {
+    if (!map.current || !loaded) return;
+    const m = map.current;
+
+    if (mode3dEnabled) {
+      // Enable 3D terrain
+      m.setTerrain({
+        source: "mapbox-dem",
+        exaggeration: 1.5,
+      });
+
+      // Enable fog/atmosphere
+      m.setFog({
+        color: "rgb(186, 210, 235)",
+        "high-color": "rgb(36, 92, 223)",
+        "horizon-blend": 0.02,
+        "space-color": "rgb(11, 11, 25)",
+        "star-intensity": 0.6,
+      });
+    } else {
+      // Disable 3D terrain
+      m.setTerrain(null);
+
+      // Disable fog/atmosphere
+      m.setFog(null);
+    }
+  }, [mode3dEnabled, loaded]);
+
+  // Handle 3D buildings visibility
+  useEffect(() => {
+    if (!map.current || !loaded) return;
+    const m = map.current;
+
+    if (m.getLayer("3d-buildings")) {
+      m.setLayoutProperty(
+        "3d-buildings",
+        "visibility",
+        visibility.buildings3d ? "visible" : "none"
+      );
+    }
+  }, [visibility.buildings3d, loaded]);
 
   // Handle segment visibility based on timeline
   useEffect(() => {
@@ -934,6 +1054,48 @@ export default function Map() {
                 <span className="layer-status"> ({t.planning})</span>
               )}
             </span>
+          </div>
+        </div>
+
+        {/* 3D Graphics Settings */}
+        <div className="graphics-settings">
+          <p className="graphics-settings-label">{t.graphicsSettings}</p>
+          <div className="graphics-settings-list">
+            <div
+              className={`layer-item clickable ${
+                visibility.buildings3d ? "" : "inactive"
+              }`}
+              onClick={() => setBuildings3dEnabled(!buildings3dEnabled)}
+            >
+              <div
+                className={`layer-checkbox ${
+                  visibility.buildings3d ? "active development" : ""
+                }`}
+              >
+                {visibility.buildings3d && (
+                  <span className="layer-checkbox-icon">✓</span>
+                )}
+              </div>
+              <span className="layer-name">{t.buildings3d}</span>
+            </div>
+
+            <div
+              className={`layer-item clickable ${
+                mode3dEnabled ? "" : "inactive"
+              }`}
+              onClick={() => setMode3dEnabled(!mode3dEnabled)}
+            >
+              <div
+                className={`layer-checkbox ${
+                  mode3dEnabled ? "active development" : ""
+                }`}
+              >
+                {mode3dEnabled && (
+                  <span className="layer-checkbox-icon">✓</span>
+                )}
+              </div>
+              <span className="layer-name">{t.mode3d}</span>
+            </div>
           </div>
         </div>
 

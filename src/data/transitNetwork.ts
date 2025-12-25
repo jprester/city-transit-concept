@@ -1024,7 +1024,7 @@ export const premetroSegments: Record<string, LineSegment> = {
     stations: [
       "Britanski trg",
       "Frankopanska",
-      "Jelačić",
+      "Trg bana Jelačića",
       "Glavni kolodvor",
       "Savski most",
     ],
@@ -1043,7 +1043,7 @@ export const gondolaSegments: Record<string, LineSegment> = {
   "gondola-west": {
     id: "gondola-west",
     name: "Jarun North → Sava Beach",
-    stations: ["Jarun North", "Jarun", "Sava Beach"],
+    stations: ["Jarun North", "Jarun Lake", "Sava Beach"],
     coordinates: [
       [STATION_JARUN_NORTH.lng, STATION_JARUN_NORTH.lat],
       [STATION_JARUN.lng, STATION_JARUN.lat],

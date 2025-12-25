@@ -30,10 +30,15 @@ export interface Translations {
   premetroTunnel: string;
   savaSkyway: string;
   developmentZones: string;
+  buildings3d: string;
+  mode3d: string;
 
   // Construction status
   building: string;
   planning: string;
+
+  // 3D Settings
+  graphicsSettings: string;
 
   // Timeline
   timelineLabel: string;
@@ -110,10 +115,15 @@ export const translations: Record<Language, Translations> = {
     premetroTunnel: "🚇 Premetro tunel",
     savaSkyway: "🚡 Sava Skyway",
     developmentZones: "🏗️ Razvojne zone",
+    buildings3d: "🏢 3D zgrade",
+    mode3d: "🌄 3D teren i atmosfera",
 
     // Construction status
     building: "u gradnji",
     planning: "u planiranju",
+
+    // 3D Settings
+    graphicsSettings: "Grafičke postavke",
 
     // Timeline
     timelineLabel: "Vremenska crta:",
@@ -202,10 +212,15 @@ export const translations: Record<Language, Translations> = {
     premetroTunnel: "🚇 Premetro Tunnel",
     savaSkyway: "🚡 Sava Skyway",
     developmentZones: "🏗️ Development Zones",
+    buildings3d: "🏢 3D Buildings",
+    mode3d: "🌄 3D Terrain & Atmosphere",
 
     // Construction status
     building: "building",
     planning: "planning",
+
+    // 3D Settings
+    graphicsSettings: "Graphics Settings",
 
     // Timeline
     timelineLabel: "Timeline:",

@@ -10,6 +10,16 @@
   height: 100%;
 }
 
+/* Mapbox Controls Positioning - move away from info panel and timeline */
+.map-container .mapboxgl-ctrl-bottom-right {
+  bottom: 20px;
+  right: 32px;
+}
+
+.map-container .mapboxgl-ctrl-bottom-left {
+  bottom: 100px;
+}
+
 /* Control Panel */
 .control-panel {
   position: absolute;
@@ -145,6 +155,19 @@
   transition: opacity 0.2s;
 }
 
+.layer-item.clickable {
+  cursor: pointer;
+}
+
+.layer-item.clickable:hover {
+  background: rgba(255, 255, 255, 0.05);
+  margin-left: -4px;
+  margin-right: -4px;
+  padding-left: 4px;
+  padding-right: 4px;
+  border-radius: 4px;
+}
+
 .layer-item.inactive {
   opacity: 0.4;
 }
@@ -194,6 +217,56 @@
 .layer-status {
   font-size: 10px;
   color: #9ca3af;
+}
+
+/* Graphics Settings */
+.graphics-settings {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.graphics-settings-label {
+  margin: 0 0 8px 0;
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.graphics-settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Interactive Checkbox for Settings */
+.layer-item.clickable {
+  cursor: pointer;
+}
+
+.layer-checkbox {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.layer-checkbox.active {
+  border-color: #3b82f6;
+  background: #3b82f6;
+}
+
+.layer-checkbox-icon {
+  color: white;
+  font-size: 10px;
 }
 
 /* Legend */
@@ -404,7 +477,7 @@
 .info-panel {
   position: absolute;
   top: 20px;
-  right: 20px;
+  right: 40px;
   width: 380px;
   max-height: calc(100vh - 40px);
   background: rgba(17, 24, 39, 0.95);
@@ -457,7 +530,7 @@
 }
 
 .info-panel-content {
-  max-height: calc(100vh - 88px);
+  max-height: calc(80vh - 88px);
   overflow-y: auto;
   padding-right: 8px;
   margin-right: -8px;
