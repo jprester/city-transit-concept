@@ -14,7 +14,6 @@
 .map-container .mapboxgl-ctrl-bottom-right {
   bottom: 20px;
   right: 32px;
-  left: 0; /* Clear the info panel (380px width + 20px margin + buffer) */
 }
 
 .map-container .mapboxgl-ctrl-bottom-left {
