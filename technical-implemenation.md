@@ -10,11 +10,11 @@
 ## Data Model
 
 - Single source of truth in [src/data/transitNetwork.ts](src/data/transitNetwork.ts)
-	- Geometry for metro lines A/B/C, premetro tunnel, Sava Skyway, Medvednica Skyway
-	- Station collections (with interchange flags) and development zones
-	- Segmented lines keyed for phased activation
-	- `transitPlans` with timelines for Realistic and Ambitious scenarios (costs, labels, and active segments per year)
-	- Helpers: `getActiveElements`, `getActiveSegments`, `getActiveStationNames`
+  - Geometry for metro lines A/B/C, premetro tunnel, Sava Skyway, Medvednica Skyway
+  - Station collections (with interchange flags) and development zones
+  - Segmented lines keyed for phased activation
+  - `transitPlans` with timelines for Realistic and Ambitious scenarios (costs, labels, and active segments per year)
+  - Helpers: `getActiveElements`, `getActiveSegments`, `getActiveStationNames`
 
 ## UI and Interaction Flow
 
