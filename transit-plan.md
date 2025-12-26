@@ -1,66 +1,32 @@
-# Plan For Zagreb transit network 2050 visualization
+# Transit Plan for Zagreb 2050 Visualization
 
-## Vision Overview
+The app models two speculative build-out options and exposes them through the plan switcher and timeline slider. Costs reflect the narrative used in the UI.
 
-The speculative Zagreb 2050 transit plan.
+## Plan Summaries
 
-Currently envisions:
+- Realistic: Premetro + Metro Line A spine + Sava Skyway. Cost: €3–4.5B over 2025–2050.
+- Ambitious: Full three-line metro (A/B/C) + Premetro + Sava Skyway + Medvednica Skyway. Cost: €8–12B over ~25 years.
 
-### Premetro (Underground Tram)
+## Realistic Timeline (drives in-app visibility)
 
-Central tunnel network handling most tram lines through the core
-Surface running on outer branches
-Relatively affordable, leverages existing system
+- 2025 Present: Planning only; no segments visible.
+- 2030 Early Phase: Premetro west segment under construction; development zones start.
+- 2035 Mid Phase: Premetro complete; Metro A south phase opens; Sava Skyway west section starts.
+- 2040 Advanced: Metro A reaches airport; gondola fully active.
+- 2045 Mature: Metro A north extension opens; development zones active.
+- 2050 Complete: Metro A fully built to Sesvete; premetro + gondola fully live.
 
-#### Light Metro (One Line)
+## Ambitious Timeline (plan switcher → Ambitious)
 
-The northeast-southwest corridor (Sesvete → Airport) as true grade-separated rapid transit
-Serves the longest-distance trips that even premetro can't handle efficiently
-Fully automated, higher capacity
+- 2025 Present: Network design only.
+- 2030 Phase 1: Premetro construction + Metro A south under way.
+- 2035 Phase 2: Metro A complete; Metro B east opens; gondola west section active.
+- 2040 Phase 3: Metro B complete; gondola fully active; Medvednica Skyway lower segment begins.
+- 2045 Phase 4: Metro C east segment opens; Medvednica Skyway reaches Sljeme; development zones active.
+- 2050 Complete: Metro C west built; both skyways and all lines A/B/C operational.
 
-#### Gondola
+## How the App Uses This
 
-Sava Skyway as discussed—scenic, tourism-oriented, connecting the riverfront
-
-### Upgraded Surface Tram
-
-Lines that don't use the tunnel get full signal priority and dedicated lanes
-New vehicles throughout
-
-This hybrid approach might cost €2-3 billion total over 20 years—substantial but achievable—rather than the €8-12 billion for a full three-line metro network.
-
-The Political Appeal
-Premetro has a political advantage: it's easier to build incrementally and show results.
-
-Year 1-3: Announce project, complete design, begin construction on first tunnel segment
-Year 4-6: First underground station opens (Jelačić), immediate improvement visible
-Year 7-10: Full central tunnel operational
-Year 10+: Extensions as funding allows
-
-Each phase delivers tangible benefits. Voters see progress within a single electoral term. Compare this to a full metro where you spend a decade digging before anything opens.
-
-Potential Drawbacks
-Capacity Ceiling
-Premetro is inherently limited by tram vehicle size. If Zagreb's population grew substantially or mode shift to transit was dramatic, you might hit capacity constraints that full metro wouldn't face. But given Zagreb's demographic reality (stagnant population), this is probably acceptable.
-Conversion Complexity
-If you later want to convert premetro to full metro (as Brussels partially did), it's expensive and disruptive. You're somewhat locked into the tram-scale infrastructure.
-Mixed Operations
-Running trams in tunnels alongside surface operations requires careful scheduling and creates some operational complexity. Not insurmountable, but needs good management.
-
-My Assessment
-For Zagreb specifically, premetro makes a lot of sense. The city is:
-
-Not large enough to justify multiple full metro lines
-Already has an extensive tram network worth preserving
-Constrained financially (Croatia's economy limits megaproject capacity)
-Suffering primarily from central congestion, not system-wide capacity shortage
-
-The premetro approach addresses the actual problem (slow central speeds) without over-building for a demand that may never materialize.
-If I were revising the speculative plan, I'd probably propose:
-
-Premetro: Central tunnel network (€1-1.5 billion)
-One light metro line: Sesvete-Airport corridor (€1.5-2 billion)
-Gondola: Sava Skyway (€200-300 million)
-Surface improvements: Signal priority, new vehicles, better stops (€300-500 million)
-
-Total: €3-4.5 billion over 20 years—ambitious but not fantastical.
+- The timeline slider filters segments, stations, and development zones per phase.
+- Medvednica Skyway appears only when the Ambitious plan is selected and relevant years are chosen.
+- Station markers and labels are automatically limited to the active segments for the selected plan/year.
