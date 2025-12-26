@@ -164,6 +164,20 @@ export const STATION_NOVI_ZAGREB_HUB = {
   lat: 45.79520327807365,
 };
 
+// Medvednica Gondola Stations
+export const STATION_TUSKANAC = {
+  lng: 15.9665,
+  lat: 45.8225,
+};
+export const STATION_MEDVEDGRAD = {
+  lng: 15.948,
+  lat: 45.865,
+};
+export const STATION_SLJEME = {
+  lng: 15.9475,
+  lat: 45.898,
+};
+
 // ============================================
 // PREMETRO (Underground Tram) - Central Tunnel
 // ============================================
@@ -293,6 +307,27 @@ export const gondolaLine = {
       [STATION_MUSEUM_DISTRICT.lng, STATION_MUSEUM_DISTRICT.lat],
       [STATION_BUNDEK.lng, STATION_BUNDEK.lat],
       [STATION_NOVI_ZAGREB_HUB.lng, STATION_NOVI_ZAGREB_HUB.lat],
+    ],
+  },
+};
+
+// ============================================
+// GONDOLA - Medvednica Skyway (Ambitious Plan Only)
+// ============================================
+
+export const medvednicaGondolaLine = {
+  type: "Feature" as const,
+  properties: {
+    name: "Medvednica Skyway",
+    color: "#10b981",
+    description: "Mountain gondola to Sljeme peak",
+  },
+  geometry: {
+    type: "LineString" as const,
+    coordinates: [
+      [STATION_TUSKANAC.lng, STATION_TUSKANAC.lat],
+      [STATION_MEDVEDGRAD.lng, STATION_MEDVEDGRAD.lat],
+      [STATION_SLJEME.lng, STATION_SLJEME.lat],
     ],
   },
 };
@@ -723,6 +758,37 @@ export const gondolaStations = {
   ],
 };
 
+// Medvednica Gondola stations
+export const medvednicaGondolaStations = {
+  type: "FeatureCollection" as const,
+  features: [
+    {
+      type: "Feature" as const,
+      properties: { name: "Tuškanac", description: "Valley station" },
+      geometry: {
+        type: "Point" as const,
+        coordinates: [STATION_TUSKANAC.lng, STATION_TUSKANAC.lat],
+      },
+    },
+    {
+      type: "Feature" as const,
+      properties: { name: "Medvedgrad", description: "Historic fortress" },
+      geometry: {
+        type: "Point" as const,
+        coordinates: [STATION_MEDVEDGRAD.lng, STATION_MEDVEDGRAD.lat],
+      },
+    },
+    {
+      type: "Feature" as const,
+      properties: { name: "Sljeme", description: "Mountain peak" },
+      geometry: {
+        type: "Point" as const,
+        coordinates: [STATION_SLJEME.lng, STATION_SLJEME.lat],
+      },
+    },
+  ],
+};
+
 // ============================================
 // DEVELOPMENT ZONES
 // ============================================
@@ -848,6 +914,7 @@ export interface TimelinePhase {
     metroB?: "none" | "partial" | "full";
     metroC?: "none" | "partial" | "full";
     gondola?: "none" | "partial" | "full";
+    medvednicaGondola?: "none" | "partial" | "full";
     development?: "none" | "partial" | "full";
   };
   // Detailed segment visibility
@@ -857,6 +924,7 @@ export interface TimelinePhase {
     metroC?: string[];
     premetro?: string[];
     gondola?: string[];
+    medvednicaGondola?: string[];
   };
 }
 
@@ -1070,6 +1138,28 @@ export const gondolaSegments: Record<string, LineSegment> = {
   },
 };
 
+// Medvednica Gondola Segments (Ambitious Plan Only)
+export const medvednicaGondolaSegments: Record<string, LineSegment> = {
+  "medvednica-lower": {
+    id: "medvednica-lower",
+    name: "Tuškanac → Medvedgrad",
+    stations: ["Tuškanac", "Medvedgrad"],
+    coordinates: [
+      [STATION_TUSKANAC.lng, STATION_TUSKANAC.lat],
+      [STATION_MEDVEDGRAD.lng, STATION_MEDVEDGRAD.lat],
+    ],
+  },
+  "medvednica-upper": {
+    id: "medvednica-upper",
+    name: "Medvedgrad → Sljeme",
+    stations: ["Medvedgrad", "Sljeme"],
+    coordinates: [
+      [STATION_MEDVEDGRAD.lng, STATION_MEDVEDGRAD.lat],
+      [STATION_SLJEME.lng, STATION_SLJEME.lat],
+    ],
+  },
+};
+
 // Realistic Plan: Premetro + Metro A + Gondola + Development (€3-4.5B)
 const realisticPlan: TransitPlan = {
   id: "realistic",
@@ -1268,13 +1358,15 @@ const ambitiousPlan: TransitPlan = {
     {
       year: 2040,
       label: "Phase 3",
-      description: "Metro B complete, Gondola fully operational",
+      description:
+        "Metro B complete, Gondola fully operational, Medvednica Skyway begins",
       elements: {
         premetro: "full",
         metroA: "full",
         metroB: "full",
         metroC: "none",
         gondola: "full",
+        medvednicaGondola: "partial",
         development: "partial",
       },
       segments: {
@@ -1288,18 +1380,20 @@ const ambitiousPlan: TransitPlan = {
         metroC: [],
         premetro: ["premetro-west", "premetro-east"],
         gondola: ["gondola-west", "gondola-east"],
+        medvednicaGondola: ["medvednica-lower"],
       },
     },
     {
       year: 2045,
       label: "Phase 4",
-      description: "Metro C east segment under construction",
+      description: "Metro C east segment, Medvednica Skyway to Sljeme",
       elements: {
         premetro: "full",
         metroA: "full",
         metroB: "full",
         metroC: "partial",
         gondola: "full",
+        medvednicaGondola: "full",
         development: "full",
       },
       segments: {
@@ -1313,18 +1407,20 @@ const ambitiousPlan: TransitPlan = {
         metroC: ["metro-c-east"],
         premetro: ["premetro-west", "premetro-east"],
         gondola: ["gondola-west", "gondola-east"],
+        medvednicaGondola: ["medvednica-lower", "medvednica-upper"],
       },
     },
     {
       year: 2050,
       label: "Complete",
-      description: "Full 3-line metro network operational",
+      description: "Full 3-line metro network and both skyways operational",
       elements: {
         premetro: "full",
         metroA: "full",
         metroB: "full",
         metroC: "full",
         gondola: "full",
+        medvednicaGondola: "full",
         development: "full",
       },
       segments: {
@@ -1338,6 +1434,7 @@ const ambitiousPlan: TransitPlan = {
         metroC: ["metro-c-east", "metro-c-west"],
         premetro: ["premetro-west", "premetro-east"],
         gondola: ["gondola-west", "gondola-east"],
+        medvednicaGondola: ["medvednica-lower", "medvednica-upper"],
       },
     },
   ],
@@ -1375,6 +1472,7 @@ export function getActiveSegments(
       metroC: [],
       premetro: [],
       gondola: [],
+      medvednicaGondola: [],
     }
   );
 }
@@ -1422,6 +1520,14 @@ export function getActiveStationNames(
   // Add stations from active Gondola segments
   activeSegments?.gondola?.forEach((segmentId) => {
     const segment = gondolaSegments[segmentId];
+    if (segment) {
+      segment.stations.forEach((station) => activeStations.add(station));
+    }
+  });
+
+  // Add stations from active Medvednica Gondola segments
+  activeSegments?.medvednicaGondola?.forEach((segmentId) => {
+    const segment = medvednicaGondolaSegments[segmentId];
     if (segment) {
       segment.stations.forEach((station) => activeStations.add(station));
     }

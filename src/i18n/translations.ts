@@ -29,6 +29,7 @@ export interface Translations {
   metroLineC: string;
   premetroTunnel: string;
   savaSkyway: string;
+  medvednicaSkyway: string;
   developmentZones: string;
   buildings3d: string;
   mode3d: string;
@@ -119,6 +120,7 @@ export const translations: Record<Language, Translations> = {
     metroLineC: "Metro linija C",
     premetroTunnel: "🚇 Premetro tunel",
     savaSkyway: "🚡 Sava Skyway",
+    medvednicaSkyway: "🚡 Medvednica Skyway",
     developmentZones: "🏗️ Razvojne zone",
     buildings3d: "🏢 3D zgrade",
     mode3d: "🌄 3D teren i atmosfera",
@@ -215,6 +217,7 @@ export const translations: Record<Language, Translations> = {
     metroLineC: "Metro Line C",
     premetroTunnel: "🚇 Premetro Tunnel",
     savaSkyway: "🚡 Sava Skyway",
+    medvednicaSkyway: "🚡 Medvednica Skyway",
     developmentZones: "🏗️ Development Zones",
     buildings3d: "🏢 3D Buildings",
     mode3d: "🌄 3D Terrain & Atmosphere",

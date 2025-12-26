@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import mapboxgl from "mapbox-gl";
-import { gondolaLine } from "../data/transitNetwork";
 
 // Convert lng/lat to Mapbox mercator coordinates
 function lngLatToMercator(lng: number, lat: number): [number, number] {
@@ -149,6 +148,11 @@ function createCable(
 
 export interface GondolaLayerOptions {
   id: string;
+  line: {
+    geometry: {
+      coordinates: number[][];
+    };
+  };
   cabinCount?: number;
   speed?: number;
 }
@@ -164,7 +168,7 @@ export function createGondolaLayer(
   map: mapboxgl.Map,
   options: GondolaLayerOptions
 ): mapboxgl.CustomLayerInterface & { controls: GondolaLayerControls } {
-  const { id, cabinCount = 3, speed: initialSpeed = 0.00015 } = options;
+  const { id, line, cabinCount = 3, speed: initialSpeed = 0.00015 } = options;
 
   // Dynamic state
   let currentSpeed = initialSpeed;
@@ -177,7 +181,7 @@ export function createGondolaLayer(
   let animationTime = 0;
 
   // Calculate model transform based on gondola line center
-  const coords = gondolaLine.geometry.coordinates;
+  const coords = line.geometry.coordinates;
   const centerLng = coords.reduce((sum, c) => sum + c[0], 0) / coords.length;
   const centerLat = coords.reduce((sum, c) => sum + c[1], 0) / coords.length;
   const centerMercator = mapboxgl.MercatorCoordinate.fromLngLat(

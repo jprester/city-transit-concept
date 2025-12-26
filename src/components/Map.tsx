@@ -7,6 +7,8 @@ import {
   gondolaLine,
   metroStations,
   gondolaStations,
+  medvednicaGondolaStations,
+  medvednicaGondolaLine,
   developmentZones,
   premetroTunnel,
   premetroStations,
@@ -20,6 +22,7 @@ import {
   metroCSegments,
   premetroSegments,
   gondolaSegments,
+  medvednicaGondolaSegments,
   type PlanType,
 } from "../data/transitNetwork";
 import {
@@ -42,6 +45,7 @@ interface LayerVisibility {
   metroC: boolean;
   premetro: boolean;
   gondola: boolean;
+  medvednicaGondola: boolean;
   stations: boolean;
   development: boolean;
   buildings3d: boolean;
@@ -91,12 +95,14 @@ export default function Map() {
   // Refs for layer controls
   const layerControlsRef = useRef<{
     gondola: GondolaLayerControls | null;
+    medvednicaGondola: GondolaLayerControls | null;
     tram: TramLayerControls | null;
     metroA: MetroLayerControls | null;
     metroB: MetroLayerControls | null;
     metroC: MetroLayerControls | null;
   }>({
     gondola: null,
+    medvednicaGondola: null,
     tram: null,
     metroA: null,
     metroB: null,
@@ -116,6 +122,7 @@ export default function Map() {
       metroC: activeElements.metroC !== "none",
       premetro: activeElements.premetro !== "none",
       gondola: activeElements.gondola !== "none",
+      medvednicaGondola: activeElements.medvednicaGondola !== "none",
       stations:
         activeElements.metroA !== "none" ||
         activeElements.metroB !== "none" ||
@@ -335,6 +342,11 @@ export default function Map() {
         addSegmentToMap(m, segment.id, segment.coordinates, "#f59e0b", false);
       });
 
+      // Add Medvednica Gondola Segments
+      Object.values(medvednicaGondolaSegments).forEach((segment) => {
+        addSegmentToMap(m, segment.id, segment.coordinates, "#10b981", false);
+      });
+
       // Add Metro Stations
       m.addSource("metro-stations", {
         type: "geojson",
@@ -406,6 +418,42 @@ export default function Map() {
         },
       });
 
+      // Add Medvednica Gondola Stations
+      m.addSource("medvednica-gondola-stations", {
+        type: "geojson",
+        data: medvednicaGondolaStations,
+      });
+
+      m.addLayer({
+        id: "medvednica-gondola-stations",
+        type: "circle",
+        source: "medvednica-gondola-stations",
+        paint: {
+          "circle-radius": 7,
+          "circle-color": medvednicaGondolaLine.properties.color,
+          "circle-stroke-width": 2,
+          "circle-stroke-color": "#ffffff",
+        },
+      });
+
+      // Medvednica Gondola station labels
+      m.addLayer({
+        id: "medvednica-gondola-labels",
+        type: "symbol",
+        source: "medvednica-gondola-stations",
+        layout: {
+          "text-field": ["get", "name"],
+          "text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
+          "text-size": 11,
+          "text-offset": [0, 1.5],
+          "text-anchor": "top",
+        },
+        paint: {
+          "text-color": "#10b981",
+          "text-halo-color": "#1f2937",
+          "text-halo-width": 1.5,
+        },
+      });
       // Station labels
       m.addLayer({
         id: "station-labels",
@@ -428,11 +476,23 @@ export default function Map() {
       // Add 3D Gondola Layer
       const gondolaLayer = createGondolaLayer(m, {
         id: "gondola-3d",
+        line: gondolaLine,
         cabinCount: 5,
         speed: 0.0002,
       });
       m.addLayer(gondolaLayer);
       layerControlsRef.current.gondola = gondolaLayer.controls;
+
+      // Add 3D Medvednica Gondola Layer
+      const medvednicaGondolaLayer = createGondolaLayer(m, {
+        id: "medvednica-gondola-3d",
+        line: medvednicaGondolaLine,
+        cabinCount: 4,
+        speed: 0.00015,
+      });
+      m.addLayer(medvednicaGondolaLayer);
+      layerControlsRef.current.medvednicaGondola =
+        medvednicaGondolaLayer.controls;
 
       // Add 3D Premetro Tram Layer
       const tramLayer = createTramLayer(m, {
@@ -773,6 +833,7 @@ export default function Map() {
 
     // Set visibility for all traffic layers
     controls.gondola?.setVisible(animatedTrafficEnabled);
+    controls.medvednicaGondola?.setVisible(animatedTrafficEnabled);
     controls.tram?.setVisible(animatedTrafficEnabled);
     controls.metroA?.setVisible(animatedTrafficEnabled);
     controls.metroB?.setVisible(animatedTrafficEnabled);
@@ -783,6 +844,7 @@ export default function Map() {
       trafficSpeed === "slow" ? 0.5 : trafficSpeed === "fast" ? 2 : 1;
 
     controls.gondola?.setSpeed(0.0002 * speedMultiplier);
+    controls.medvednicaGondola?.setSpeed(0.00015 * speedMultiplier);
     controls.tram?.setSpeed(0.0003 * speedMultiplier);
     controls.metroA?.setSpeed(0.00025 * speedMultiplier);
     controls.metroB?.setSpeed(0.00025 * speedMultiplier);
@@ -841,10 +903,24 @@ export default function Map() {
       setVis(`layer-${segmentId}`, isActive);
     });
 
+    // Medvednica Gondola segments (only visible in ambitious plan)
+    const isAmbitiousPlan = selectedPlan === "ambitious";
+    Object.keys(medvednicaGondolaSegments).forEach((segmentId) => {
+      const isActive =
+        isAmbitiousPlan &&
+        (activeSegments?.medvednicaGondola?.includes(segmentId) || false);
+      setVis(`layer-${segmentId}`, isActive);
+    });
+
     // Other layers (gondola 3D, stations, development zones)
     setVis("gondola-3d", visibility.gondola);
     setVis("gondola-stations", visibility.gondola);
     setVis("gondola-labels", visibility.gondola);
+    // Medvednica gondola only visible in ambitious plan
+    const medvednicaVisible = visibility.medvednicaGondola && isAmbitiousPlan;
+    setVis("medvednica-gondola-3d", medvednicaVisible);
+    setVis("medvednica-gondola-stations", medvednicaVisible);
+    setVis("medvednica-gondola-labels", medvednicaVisible);
     setVis("premetro-portals", visibility.premetro);
     setVis("premetro-underground", visibility.premetro);
     setVis("premetro-labels", visibility.premetro);
@@ -1129,6 +1205,39 @@ export default function Map() {
               {activeElements.gondola === "partial" && (
                 <span className="layer-status"> ({t.building})</span>
               )}
+            </span>
+          </div>
+
+          <div
+            className={`layer-item ${
+              selectedPlan !== "ambitious"
+                ? "disabled"
+                : visibility.medvednicaGondola
+                ? ""
+                : "inactive"
+            }`}
+          >
+            <span
+              className={`layer-status-indicator medvednica-gondola ${
+                selectedPlan !== "ambitious"
+                  ? "none"
+                  : activeElements.medvednicaGondola
+              }`}
+            >
+              {selectedPlan !== "ambitious"
+                ? "○"
+                : activeElements.medvednicaGondola === "partial"
+                ? "🚧"
+                : activeElements.medvednicaGondola === "full"
+                ? "●"
+                : "○"}
+            </span>
+            <span className="layer-name">
+              {t.medvednicaSkyway}
+              {selectedPlan === "ambitious" &&
+                activeElements.medvednicaGondola === "partial" && (
+                  <span className="layer-status"> ({t.building})</span>
+                )}
             </span>
           </div>
 

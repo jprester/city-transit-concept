@@ -172,6 +172,11 @@
   opacity: 0.4;
 }
 
+.layer-item.disabled {
+  opacity: 0.35;
+  font-style: italic;
+}
+
 /* Status Indicator - replaces checkbox */
 .layer-status-indicator {
   font-size: 14px;
@@ -199,6 +204,10 @@
 
 .layer-status-indicator.gondola {
   color: #f59e0b;
+}
+
+.layer-status-indicator.medvednica-gondola {
+  color: #10b981;
 }
 
 .layer-status-indicator.development {
