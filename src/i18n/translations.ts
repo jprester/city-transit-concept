@@ -32,6 +32,11 @@ export interface Translations {
   developmentZones: string;
   buildings3d: string;
   mode3d: string;
+  animatedTraffic: string;
+  trafficSpeed: string;
+  speedSlow: string;
+  speedNormal: string;
+  speedFast: string;
 
   // Construction status
   building: string;
@@ -117,6 +122,11 @@ export const translations: Record<Language, Translations> = {
     developmentZones: "🏗️ Razvojne zone",
     buildings3d: "🏢 3D zgrade",
     mode3d: "🌄 3D teren i atmosfera",
+    animatedTraffic: "🚇 Animirani promet",
+    trafficSpeed: "Brzina:",
+    speedSlow: "Sporo",
+    speedNormal: "Normalno",
+    speedFast: "Brzo",
 
     // Construction status
     building: "u gradnji",
@@ -138,27 +148,21 @@ export const translations: Record<Language, Translations> = {
     // Timeline descriptions - Realistic
     realistic2025Description: "Faza planiranja - Početni projekti u tijeku",
     realistic2030Description: "Gradnja zapadnog premetro tunela",
-    realistic2035Description:
-      "Premetro završen, južni segment Metro A otvoren",
+    realistic2035Description: "Premetro završen, južni segment Metro A otvoren",
     realistic2040Description:
       "Metro A stiže do zračne luke, gondola potpuno operativna",
     realistic2045Description:
       "Sjeverno proširenje Metro A otvoreno, razvojne zone aktivne",
-    realistic2050Description:
-      "Potpuna Metro A linija do Sesveta operativna",
+    realistic2050Description: "Potpuna Metro A linija do Sesveta operativna",
 
     // Timeline descriptions - Ambitious
-    ambitious2025Description:
-      "Faza planiranja - Sveobuhvatni dizajn mreže",
-    ambitious2030Description:
-      "Gradnja Premetra i južnog segmenta Metro A",
+    ambitious2025Description: "Faza planiranja - Sveobuhvatni dizajn mreže",
+    ambitious2030Description: "Gradnja Premetra i južnog segmenta Metro A",
     ambitious2035Description:
       "Metro A završen, istočno-zapadni segment Linije B otvoren",
-    ambitious2040Description:
-      "Metro B završen, gondola potpuno operativna",
+    ambitious2040Description: "Metro B završen, gondola potpuno operativna",
     ambitious2045Description: "Istočni segment Metro C u gradnji",
-    ambitious2050Description:
-      "Potpuna mreža tri metro linije operativna",
+    ambitious2050Description: "Potpuna mreža tri metro linije operativna",
 
     // Timeline labels
     phase1: "Faza 1",
@@ -214,6 +218,11 @@ export const translations: Record<Language, Translations> = {
     developmentZones: "🏗️ Development Zones",
     buildings3d: "🏢 3D Buildings",
     mode3d: "🌄 3D Terrain & Atmosphere",
+    animatedTraffic: "🚇 Animated Traffic",
+    trafficSpeed: "Speed:",
+    speedSlow: "Slow",
+    speedNormal: "Normal",
+    speedFast: "Fast",
 
     // Construction status
     building: "building",
@@ -235,8 +244,7 @@ export const translations: Record<Language, Translations> = {
     // Timeline descriptions - Realistic
     realistic2025Description: "Planning phase - Initial designs underway",
     realistic2030Description: "Western premetro tunnel under construction",
-    realistic2035Description:
-      "Premetro complete, Metro A south segment opens",
+    realistic2035Description: "Premetro complete, Metro A south segment opens",
     realistic2040Description:
       "Metro A reaches Airport, Gondola fully operational",
     realistic2045Description:
@@ -244,14 +252,10 @@ export const translations: Record<Language, Translations> = {
     realistic2050Description: "Full Metro A line to Sesvete operational",
 
     // Timeline descriptions - Ambitious
-    ambitious2025Description:
-      "Planning phase - Comprehensive network design",
-    ambitious2030Description:
-      "Premetro + Metro A south segment construction",
-    ambitious2035Description:
-      "Metro A complete, Line B east-west opens",
-    ambitious2040Description:
-      "Metro B complete, Gondola fully operational",
+    ambitious2025Description: "Planning phase - Comprehensive network design",
+    ambitious2030Description: "Premetro + Metro A south segment construction",
+    ambitious2035Description: "Metro A complete, Line B east-west opens",
+    ambitious2040Description: "Metro B complete, Gondola fully operational",
     ambitious2045Description: "Metro C east segment under construction",
     ambitious2050Description: "Full 3-line metro network operational",
 

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import mapboxgl from "mapbox-gl";
-import { gondolaLine } from "../data/transitNetwork";
+import { premetroTunnel, premetroSegments } from "../data/transitNetwork";
 
 // Convert lng/lat to Mapbox mercator coordinates
 function lngLatToMercator(lng: number, lat: number): [number, number] {
@@ -41,130 +41,92 @@ function interpolatePath(
   };
 }
 
-// Create a simple gondola cabin mesh
-function createGondolaCabin(): THREE.Group {
+// Create a tram vehicle mesh
+function createTram(): THREE.Group {
   const group = new THREE.Group();
 
-  // Cabin body (box)
-  const cabinGeometry = new THREE.BoxGeometry(1, 0.8, 0.6);
-  const cabinMaterial = new THREE.MeshPhongMaterial({
-    color: 0xf59e0b,
+  // Tram body (elongated box)
+  const bodyGeometry = new THREE.BoxGeometry(2.5, 0.8, 0.6);
+  const bodyMaterial = new THREE.MeshPhongMaterial({
+    color: 0x8b5cf6, // Purple color matching premetro
     transparent: true,
-    opacity: 0.9,
+    opacity: 0.95,
   });
-  const cabin = new THREE.Mesh(cabinGeometry, cabinMaterial);
-  cabin.position.y = -0.2;
-  group.add(cabin);
+  const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+  body.position.y = 0.4;
+  group.add(body);
 
-  // Windows (darker inset)
-  const windowGeometry = new THREE.BoxGeometry(0.9, 0.5, 0.65);
+  // Windows (darker sections)
+  const windowGeometry = new THREE.BoxGeometry(2.3, 0.5, 0.65);
   const windowMaterial = new THREE.MeshPhongMaterial({
     color: 0x1e3a5f,
     transparent: true,
-    opacity: 0.7,
+    opacity: 0.8,
   });
   const windows = new THREE.Mesh(windowGeometry, windowMaterial);
-  windows.position.y = -0.1;
+  windows.position.y = 0.5;
   group.add(windows);
 
-  // Roof connector
-  const connectorGeometry = new THREE.CylinderGeometry(0.05, 0.05, 0.3, 8);
-  const connectorMaterial = new THREE.MeshPhongMaterial({ color: 0x374151 });
-  const connector = new THREE.Mesh(connectorGeometry, connectorMaterial);
-  connector.position.y = 0.35;
-  group.add(connector);
+  // Front/rear sections (slightly rounded with small boxes)
+  const frontGeometry = new THREE.BoxGeometry(0.1, 0.6, 0.55);
+  const frontMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
 
-  // Top attachment
-  const topGeometry = new THREE.SphereGeometry(0.1, 8, 8);
-  const top = new THREE.Mesh(topGeometry, connectorMaterial);
-  top.position.y = 0.5;
-  group.add(top);
+  const front = new THREE.Mesh(frontGeometry, frontMaterial);
+  front.position.set(1.3, 0.4, 0);
+  group.add(front);
+
+  const rear = new THREE.Mesh(frontGeometry, frontMaterial);
+  rear.position.set(-1.3, 0.4, 0);
+  group.add(rear);
+
+  // Yellow accent stripe
+  const stripeGeometry = new THREE.BoxGeometry(2.5, 0.08, 0.62);
+  const stripeMaterial = new THREE.MeshPhongMaterial({ color: 0xfbbf24 });
+  const stripe = new THREE.Mesh(stripeGeometry, stripeMaterial);
+  stripe.position.y = 0.25;
+  group.add(stripe);
+
+  // Roof
+  const roofGeometry = new THREE.BoxGeometry(2.5, 0.05, 0.65);
+  const roofMaterial = new THREE.MeshPhongMaterial({ color: 0x6b7280 });
+  const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+  roof.position.y = 0.825;
+  group.add(roof);
+
+  // Pantograph (current collector)
+  const pantographGeometry = new THREE.BoxGeometry(0.1, 0.3, 0.05);
+  const pantographMaterial = new THREE.MeshPhongMaterial({ color: 0x374151 });
+  const pantograph = new THREE.Mesh(pantographGeometry, pantographMaterial);
+  pantograph.position.y = 1.1;
+  group.add(pantograph);
 
   return group;
 }
 
-// Create pylons along the gondola route
-function createPylons(
-  coordinates: number[][],
-  modelTransform: {
-    translateX: number;
-    translateY: number;
-    scale: number;
-  }
-): THREE.Group {
-  const pylonsGroup = new THREE.Group();
-  const pylonMaterial = new THREE.MeshPhongMaterial({ color: 0x6b7280 });
-
-  // Place pylons at each station
-  coordinates.forEach((coord) => {
-    const [x, y] = lngLatToMercator(coord[0], coord[1]);
-
-    // Main pylon column
-    const pylonGeometry = new THREE.CylinderGeometry(0.15, 0.2, 4, 8);
-    const pylon = new THREE.Mesh(pylonGeometry, pylonMaterial);
-
-    // Position in world coordinates
-    pylon.position.x = (x - modelTransform.translateX) / modelTransform.scale;
-    pylon.position.z = (y - modelTransform.translateY) / modelTransform.scale;
-    pylon.position.y = 2;
-
-    // Cross arm at top
-    const armGeometry = new THREE.BoxGeometry(2, 0.15, 0.15);
-    const arm = new THREE.Mesh(armGeometry, pylonMaterial);
-    arm.position.y = 2;
-
-    pylon.add(arm);
-    pylonsGroup.add(pylon);
-  });
-
-  return pylonsGroup;
-}
-
-// Create the cable line
-function createCable(
-  coordinates: number[][],
-  modelTransform: {
-    translateX: number;
-    translateY: number;
-    scale: number;
-  }
-): THREE.Line {
-  const points: THREE.Vector3[] = coordinates.map((coord) => {
-    const [x, y] = lngLatToMercator(coord[0], coord[1]);
-    return new THREE.Vector3(
-      (x - modelTransform.translateX) / modelTransform.scale,
-      4.1, // Height above ground
-      (y - modelTransform.translateY) / modelTransform.scale
-    );
-  });
-
-  const geometry = new THREE.BufferGeometry().setFromPoints(points);
-  const material = new THREE.LineBasicMaterial({
-    color: 0x374151,
-    linewidth: 2,
-  });
-
-  return new THREE.Line(geometry, material);
-}
-
-export interface GondolaLayerOptions {
+export interface TramLayerOptions {
   id: string;
-  cabinCount?: number;
+  tramCount?: number;
   speed?: number;
+  segmentIds?: string[]; // Which premetro segments to animate
 }
 
-export interface GondolaLayerControls {
+export interface TramLayerControls {
   setSpeed: (speed: number) => void;
   setVisible: (visible: boolean) => void;
   getSpeed: () => number;
   isVisible: () => boolean;
 }
 
-export function createGondolaLayer(
+export function createTramLayer(
   map: mapboxgl.Map,
-  options: GondolaLayerOptions
-): mapboxgl.CustomLayerInterface & { controls: GondolaLayerControls } {
-  const { id, cabinCount = 3, speed: initialSpeed = 0.00015 } = options;
+  options: TramLayerOptions
+): mapboxgl.CustomLayerInterface & { controls: TramLayerControls } {
+  const {
+    id,
+    tramCount = 2,
+    speed: initialSpeed = 0.0003,
+    segmentIds,
+  } = options;
 
   // Dynamic state
   let currentSpeed = initialSpeed;
@@ -173,11 +135,39 @@ export function createGondolaLayer(
   let renderer: THREE.WebGLRenderer;
   let scene: THREE.Scene;
   let camera: THREE.Camera;
-  const cabins: THREE.Group[] = [];
+  const trams: THREE.Group[] = [];
   let animationTime = 0;
 
-  // Calculate model transform based on gondola line center
-  const coords = gondolaLine.geometry.coordinates;
+  // Get coordinates for the route
+  const getRouteCoordinates = (): number[][] => {
+    if (segmentIds && segmentIds.length > 0) {
+      // Combine coordinates from specified segments
+      const coords: number[][] = [];
+      segmentIds.forEach((segmentId) => {
+        const segment = premetroSegments[segmentId];
+        if (segment) {
+          // Skip first coordinate if it matches the last coordinate of previous segment
+          const segmentCoords = segment.coordinates;
+          if (
+            coords.length > 0 &&
+            coords[coords.length - 1][0] === segmentCoords[0][0] &&
+            coords[coords.length - 1][1] === segmentCoords[0][1]
+          ) {
+            coords.push(...segmentCoords.slice(1));
+          } else {
+            coords.push(...segmentCoords);
+          }
+        }
+      });
+      return coords;
+    }
+    // Default to full premetro tunnel
+    return premetroTunnel.geometry.coordinates;
+  };
+
+  const coords = getRouteCoordinates();
+
+  // Calculate model transform based on premetro center
   const centerLng = coords.reduce((sum, c) => sum + c[0], 0) / coords.length;
   const centerLat = coords.reduce((sum, c) => sum + c[1], 0) / coords.length;
   const centerMercator = mapboxgl.MercatorCoordinate.fromLngLat(
@@ -210,19 +200,11 @@ export function createGondolaLayer(
       directionalLight.position.set(1, 2, 1);
       scene.add(directionalLight);
 
-      // Create pylons
-      const pylons = createPylons(coords, modelTransform);
-      scene.add(pylons);
-
-      // Create cable
-      const cable = createCable(coords, modelTransform);
-      scene.add(cable);
-
-      // Create gondola cabins at different positions along the path
-      for (let i = 0; i < cabinCount; i++) {
-        const cabin = createGondolaCabin();
-        cabins.push(cabin);
-        scene.add(cabin);
+      // Create tram vehicles at different positions along the path
+      for (let i = 0; i < tramCount; i++) {
+        const tram = createTram();
+        trams.push(tram);
+        scene.add(tram);
       }
 
       // Create renderer using the Mapbox canvas context
@@ -243,25 +225,22 @@ export function createGondolaLayer(
       // Update animation
       animationTime += currentSpeed;
 
-      // Update cabin positions
-      cabins.forEach((cabin, index) => {
-        // Offset each cabin along the path
-        const t = (animationTime + index / cabinCount) % 1;
+      // Update tram positions
+      trams.forEach((tram, index) => {
+        // Offset each tram along the path
+        const t = (animationTime + index / tramCount) % 1;
         const { position, rotation } = interpolatePath(coords, t);
 
         const [x, y] = lngLatToMercator(position[0], position[1]);
 
-        cabin.position.x =
+        tram.position.x =
           (x - modelTransform.translateX) / modelTransform.scale;
-        cabin.position.z =
+        tram.position.z =
           (y - modelTransform.translateY) / modelTransform.scale;
-        cabin.position.y = 3.8; // Hang below cable
+        tram.position.y = 0.5; // At ground level
 
         // Rotate to face direction of travel
-        cabin.rotation.y = rotation;
-
-        // Gentle swinging motion
-        cabin.rotation.z = Math.sin(animationTime * 10 + index) * 0.02;
+        tram.rotation.y = rotation;
       });
 
       // Setup camera matrix from Mapbox
@@ -298,7 +277,7 @@ export function createGondolaLayer(
   };
 
   // Layer controls for dynamic updates
-  const controls: GondolaLayerControls = {
+  const controls: TramLayerControls = {
     setSpeed: (speed: number) => {
       currentSpeed = speed;
     },

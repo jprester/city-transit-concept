@@ -241,6 +241,49 @@
   gap: 10px;
 }
 
+/* Speed Control */
+.speed-control {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-left: 24px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.speed-label {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
+.speed-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.speed-button {
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: #9ca3af;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.speed-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.speed-button.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: white;
+}
+
 /* Interactive Checkbox for Settings */
 .layer-item.clickable {
   cursor: pointer;

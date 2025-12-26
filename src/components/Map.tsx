@@ -22,7 +22,15 @@ import {
   gondolaSegments,
   type PlanType,
 } from "../data/transitNetwork";
-import { createGondolaLayer } from "../layers/GondolaLayer";
+import {
+  createGondolaLayer,
+  type GondolaLayerControls,
+} from "../layers/GondolaLayer";
+import { createTramLayer, type TramLayerControls } from "../layers/TramLayer";
+import {
+  createMetroLayer,
+  type MetroLayerControls,
+} from "../layers/MetroLayer";
 import { useLanguage } from "../i18n/useLanguage";
 
 // Using a public demo token - in production you'd use your own
@@ -75,6 +83,25 @@ export default function Map() {
   const [infoPanelMinimized, setInfoPanelMinimized] = useState(false);
   const [mode3dEnabled, setMode3dEnabled] = useState(false); // 3D terrain/fog off by default to save memory
   const [buildings3dEnabled, setBuildings3dEnabled] = useState(true);
+  const [animatedTrafficEnabled, setAnimatedTrafficEnabled] = useState(true);
+  const [trafficSpeed, setTrafficSpeed] = useState<"slow" | "normal" | "fast">(
+    "normal"
+  );
+
+  // Refs for layer controls
+  const layerControlsRef = useRef<{
+    gondola: GondolaLayerControls | null;
+    tram: TramLayerControls | null;
+    metroA: MetroLayerControls | null;
+    metroB: MetroLayerControls | null;
+    metroC: MetroLayerControls | null;
+  }>({
+    gondola: null,
+    tram: null,
+    metroA: null,
+    metroB: null,
+    metroC: null,
+  });
 
   // Get current construction phase for active elements
   const activeElements = useMemo(
@@ -405,6 +432,47 @@ export default function Map() {
         speed: 0.0002,
       });
       m.addLayer(gondolaLayer);
+      layerControlsRef.current.gondola = gondolaLayer.controls;
+
+      // Add 3D Premetro Tram Layer
+      const tramLayer = createTramLayer(m, {
+        id: "premetro-tram-3d",
+        tramCount: 2,
+        speed: 0.0003,
+      });
+      m.addLayer(tramLayer);
+      layerControlsRef.current.tram = tramLayer.controls;
+
+      // Add 3D Metro Train Layers
+      const metroALayer = createMetroLayer(m, {
+        id: "metro-a-train-3d",
+        line: "A",
+        trainCount: 3,
+        carCount: 3,
+        speed: 0.00025,
+      });
+      m.addLayer(metroALayer);
+      layerControlsRef.current.metroA = metroALayer.controls;
+
+      const metroBLayer = createMetroLayer(m, {
+        id: "metro-b-train-3d",
+        line: "B",
+        trainCount: 3,
+        carCount: 3,
+        speed: 0.00025,
+      });
+      m.addLayer(metroBLayer);
+      layerControlsRef.current.metroB = metroBLayer.controls;
+
+      const metroCLayer = createMetroLayer(m, {
+        id: "metro-c-train-3d",
+        line: "C",
+        trainCount: 3,
+        carCount: 3,
+        speed: 0.00025,
+      });
+      m.addLayer(metroCLayer);
+      layerControlsRef.current.metroC = metroCLayer.controls;
 
       // Animate the metro line dashes
       let dashOffset = 0;
@@ -697,6 +765,30 @@ export default function Map() {
     }
   }, [visibility.buildings3d, loaded]);
 
+  // Handle animated traffic visibility and speed
+  useEffect(() => {
+    if (!loaded) return;
+
+    const controls = layerControlsRef.current;
+
+    // Set visibility for all traffic layers
+    controls.gondola?.setVisible(animatedTrafficEnabled);
+    controls.tram?.setVisible(animatedTrafficEnabled);
+    controls.metroA?.setVisible(animatedTrafficEnabled);
+    controls.metroB?.setVisible(animatedTrafficEnabled);
+    controls.metroC?.setVisible(animatedTrafficEnabled);
+
+    // Set speed based on selection
+    const speedMultiplier =
+      trafficSpeed === "slow" ? 0.5 : trafficSpeed === "fast" ? 2 : 1;
+
+    controls.gondola?.setSpeed(0.0002 * speedMultiplier);
+    controls.tram?.setSpeed(0.0003 * speedMultiplier);
+    controls.metroA?.setSpeed(0.00025 * speedMultiplier);
+    controls.metroB?.setSpeed(0.00025 * speedMultiplier);
+    controls.metroC?.setSpeed(0.00025 * speedMultiplier);
+  }, [animatedTrafficEnabled, trafficSpeed, loaded]);
+
   // Handle segment visibility based on timeline
   useEffect(() => {
     if (!map.current || !loaded) return;
@@ -756,6 +848,10 @@ export default function Map() {
     setVis("premetro-portals", visibility.premetro);
     setVis("premetro-underground", visibility.premetro);
     setVis("premetro-labels", visibility.premetro);
+    setVis("premetro-tram-3d", visibility.premetro);
+    setVis("metro-a-train-3d", visibility.metroA);
+    setVis("metro-b-train-3d", visibility.metroB);
+    setVis("metro-c-train-3d", visibility.metroC);
     setVis("development-zones-fill", visibility.development);
     setVis("development-zones-outline", visibility.development);
 
@@ -1096,6 +1192,56 @@ export default function Map() {
               </div>
               <span className="layer-name">{t.mode3d}</span>
             </div>
+
+            <div
+              className={`layer-item clickable ${
+                animatedTrafficEnabled ? "" : "inactive"
+              }`}
+              onClick={() => setAnimatedTrafficEnabled(!animatedTrafficEnabled)}
+            >
+              <div
+                className={`layer-checkbox ${
+                  animatedTrafficEnabled ? "active development" : ""
+                }`}
+              >
+                {animatedTrafficEnabled && (
+                  <span className="layer-checkbox-icon">✓</span>
+                )}
+              </div>
+              <span className="layer-name">{t.animatedTraffic}</span>
+            </div>
+
+            {animatedTrafficEnabled && (
+              <div className="speed-control">
+                <span className="speed-label">{t.trafficSpeed}</span>
+                <div className="speed-buttons">
+                  <button
+                    className={`speed-button ${
+                      trafficSpeed === "slow" ? "active" : ""
+                    }`}
+                    onClick={() => setTrafficSpeed("slow")}
+                  >
+                    {t.speedSlow}
+                  </button>
+                  <button
+                    className={`speed-button ${
+                      trafficSpeed === "normal" ? "active" : ""
+                    }`}
+                    onClick={() => setTrafficSpeed("normal")}
+                  >
+                    {t.speedNormal}
+                  </button>
+                  <button
+                    className={`speed-button ${
+                      trafficSpeed === "fast" ? "active" : ""
+                    }`}
+                    onClick={() => setTrafficSpeed("fast")}
+                  >
+                    {t.speedFast}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
