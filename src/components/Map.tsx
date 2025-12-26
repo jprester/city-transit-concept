@@ -1470,24 +1470,25 @@ export default function Map() {
         </div>
       </div> */}
 
-      {/* Info Panel */}
-      <div
-        className={`info-panel ${infoPanelMinimized ? "minimized" : ""} ${
-          isMobile ? "mobile" : ""
-        }`}>
-        <button
-          className="info-panel-toggle"
-          onClick={() => setInfoPanelMinimized(!infoPanelMinimized)}
-          title={infoPanelMinimized ? "Show info panel" : "Hide info panel"}>
-          {infoPanelMinimized ? "📖" : "✕"}
-        </button>
+      {/* Info Panel - hide when control panel is open on mobile */}
+      {!(isMobile && controlPanelOpen && infoPanelMinimized) && (
+        <div
+          className={`info-panel ${infoPanelMinimized ? "minimized" : ""} ${
+            isMobile ? "mobile" : ""
+          }`}>
+          <button
+            className="info-panel-toggle"
+            onClick={() => setInfoPanelMinimized(!infoPanelMinimized)}
+            title={infoPanelMinimized ? "Show info panel" : "Hide info panel"}>
+            {infoPanelMinimized ? "📖" : "✕"}
+          </button>
 
-        {!infoPanelMinimized && (
-          <div ref={infoPanelRef} className="info-panel-content">
-            <h2 className="info-panel-title">{t.infoPanelTitle}</h2>
+          {!infoPanelMinimized && (
+            <div ref={infoPanelRef} className="info-panel-content">
+              <h2 className="info-panel-title">{t.infoPanelTitle}</h2>
 
-            <section className="info-section">
-              <h3>{t.overviewTitle}</h3>
+              <section className="info-section">
+                <h3>{t.overviewTitle}</h3>
               <p>
                 {selectedPlan === "realistic"
                   ? t.overviewRealistic
@@ -1528,7 +1529,8 @@ export default function Map() {
             </section>
           </div>
         )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -33,7 +33,7 @@
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   max-width: 280px;
-  max-height: calc(100vh - 40px);
+  max-height: calc(100vh - 32px);
   display: flex;
   flex-direction: column;
 }
@@ -399,8 +399,8 @@
 .timeline-control {
   position: absolute;
   bottom: 30px;
-  left: 0;
-  right: 0;
+  left: 50%;
+  right: 50%;
   transform: translateX(-50%);
   background: rgba(17, 24, 39, 0.9);
   padding: 20px 30px;
@@ -581,6 +581,10 @@
   height: 50px;
   padding: 0;
   overflow: hidden;
+  background: transparent;
+  backdrop-filter: none;
+  border: none;
+  box-shadow: none;
 }
 
 .info-panel-toggle {
@@ -609,9 +613,13 @@
 
 .info-panel.minimized .info-panel-toggle {
   position: static;
-  margin: 11px;
-  width: 28px;
-  height: 28px;
+  margin: 0;
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: rgba(17, 24, 39, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 .info-panel-content {
@@ -619,6 +627,7 @@
   overflow-y: auto;
   padding-right: 8px;
   margin-right: -8px;
+  margin-top: 32px;
 }
 
 .info-panel-content::-webkit-scrollbar {
@@ -793,6 +802,13 @@
   animation: fadeIn 0.2s ease;
 }
 
+/* Hide minimized info panel when overlay is active */
+.mobile-overlay ~ .info-panel.minimized {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -941,6 +957,8 @@
 
   .timeline-control.mobile {
     padding: 10px 22px;
+    left: 0px;
+    right: 0px;
   }
 
   .timeline-header {
@@ -1015,9 +1033,17 @@
   }
 
   .info-panel.mobile.minimized {
-    /* opacity: 0; */
-    visibility: hidden;
-    pointer-events: none;
+    width: 48px;
+    height: 48px;
+    top: 16px;
+    right: 16px;
+    left: auto;
+    bottom: auto;
+    border-radius: 12px;
+    padding: 0;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
   }
 
   .info-panel.minimized {
@@ -1043,7 +1069,10 @@
   .info-panel.minimized .info-panel-toggle {
     position: static;
     transform: none;
-    margin: 10px;
+    margin: 0;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
   }
 
   .info-panel-content {
@@ -1101,7 +1130,7 @@
     max-height: 100vh;
     border-radius: 0;
     border-right: 1px solid rgba(255, 255, 255, 0.1);
-    z-index: 20;
+    z-index: 126;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
   }
