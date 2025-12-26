@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "./Map.css";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 
 import {
   gondolaLine,
@@ -77,6 +78,7 @@ function getTimelineLabel(year: number, t: any): string {
 
 export default function Map() {
   const { language, setLanguage, t } = useLanguage();
+  const { isMobile, isTablet } = useMediaQuery();
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const infoPanelRef = useRef<HTMLDivElement>(null);
@@ -85,6 +87,7 @@ export default function Map() {
   const [selectedPlan, setSelectedPlan] = useState<PlanType>("realistic");
   const [selectedYear, setSelectedYear] = useState(2050); // Default to showing everything
   const [infoPanelMinimized, setInfoPanelMinimized] = useState(false);
+  const [controlPanelOpen, setControlPanelOpen] = useState(false); // Collapsed by default on mobile
   const [mode3dEnabled, setMode3dEnabled] = useState(false); // 3D terrain/fog off by default to save memory
   const [buildings3dEnabled, setBuildings3dEnabled] = useState(true);
   const [animatedTrafficEnabled, setAnimatedTrafficEnabled] = useState(true);
@@ -1051,28 +1054,58 @@ export default function Map() {
     }
   };
 
+  // Auto-close control panel on mobile when tapping outside
+  const handleOverlayClick = () => {
+    if (isMobile || isTablet) {
+      setControlPanelOpen(false);
+    }
+  };
+
   return (
-    <div className="map-container">
+    <div
+      className={`map-container ${isMobile ? "is-mobile" : ""} ${
+        isTablet ? "is-tablet" : ""
+      }`}>
       <div ref={mapContainer} className="map-canvas" />
 
+      {/* Mobile Menu Toggle Button */}
+      {(isMobile || isTablet) && (
+        <button
+          className={`mobile-menu-toggle ${controlPanelOpen ? "active" : ""}`}
+          onClick={() => setControlPanelOpen(!controlPanelOpen)}
+          aria-label={controlPanelOpen ? "Close menu" : "Open menu"}>
+          <span className="hamburger-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
+      )}
+
+      {/* Mobile Overlay */}
+      {(isMobile || isTablet) && controlPanelOpen && (
+        <div className="mobile-overlay" onClick={handleOverlayClick} />
+      )}
+
       {/* Control Panel */}
-      <div className="control-panel">
+      <div
+        className={`control-panel ${
+          isMobile || isTablet ? (controlPanelOpen ? "open" : "closed") : ""
+        }`}>
         <div className="control-panel-header">
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-start",
-            }}
-          >
+            }}>
             <div>
               <h2 className="control-panel-title">{t.controlPanelTitle}</h2>
               <p className="control-panel-subtitle">{t.controlPanelSubtitle}</p>
             </div>
             <button
               onClick={() => setLanguage(language === "hr" ? "en" : "hr")}
-              className="language-selector"
-            >
+              className="language-selector">
               {language === "hr" ? "EN" : "HR"}
             </button>
           </div>
@@ -1080,312 +1113,300 @@ export default function Map() {
 
         <div className="control-panel-content">
           {/* Plan Switcher */}
-        <div className="plan-switcher-container">
-          <p className="plan-switcher-label">{t.transitPlanLabel}</p>
-          <div className="plan-switcher-buttons">
-            <button
-              onClick={() => {
-                setSelectedPlan("realistic");
-                setSelectedYear(2050);
-              }}
-              className={`plan-button realistic ${
-                selectedPlan === "realistic" ? "active" : ""
-              }`}
-            >
-              {t.realisticPlan}
-            </button>
-            <button
-              onClick={() => {
-                setSelectedPlan("ambitious");
-                setSelectedYear(2050);
-              }}
-              className={`plan-button ambitious ${
-                selectedPlan === "ambitious" ? "active" : ""
-              }`}
-            >
-              {t.ambitiousPlan}
-            </button>
-          </div>
-          <p className="plan-description">
-            {selectedPlan === "realistic"
-              ? t.realisticPlanDescription
-              : t.ambitiousPlanDescription}
-          </p>
-          <p className="plan-cost">
-            {selectedPlan === "realistic"
-              ? t.realisticPlanCost
-              : t.ambitiousPlanCost}
-          </p>
-        </div>
-
-        <div className="layer-list">
-          <div className={`layer-item ${visibility.metroA ? "" : "inactive"}`}>
-            <span
-              className={`layer-status-indicator metro-a ${activeElements.metroA}`}
-            >
-              {activeElements.metroA === "partial"
-                ? "🚧"
-                : activeElements.metroA === "full"
-                ? "●"
-                : "○"}
-            </span>
-            <span className="layer-name">
-              {t.metroLineA}
-              {activeElements.metroA === "partial" && (
-                <span className="layer-status"> ({t.building})</span>
-              )}
-            </span>
+          <div className="plan-switcher-container">
+            <p className="plan-switcher-label">{t.transitPlanLabel}</p>
+            <div className="plan-switcher-buttons">
+              <button
+                onClick={() => {
+                  setSelectedPlan("realistic");
+                  setSelectedYear(2050);
+                }}
+                className={`plan-button realistic ${
+                  selectedPlan === "realistic" ? "active" : ""
+                }`}>
+                {t.realisticPlan}
+              </button>
+              <button
+                onClick={() => {
+                  setSelectedPlan("ambitious");
+                  setSelectedYear(2050);
+                }}
+                className={`plan-button ambitious ${
+                  selectedPlan === "ambitious" ? "active" : ""
+                }`}>
+                {t.ambitiousPlan}
+              </button>
+            </div>
+            <p className="plan-description">
+              {selectedPlan === "realistic"
+                ? t.realisticPlanDescription
+                : t.ambitiousPlanDescription}
+            </p>
+            <p className="plan-cost">
+              {selectedPlan === "realistic"
+                ? t.realisticPlanCost
+                : t.ambitiousPlanCost}
+            </p>
           </div>
 
-          <div className={`layer-item ${visibility.metroB ? "" : "inactive"}`}>
-            <span
-              className={`layer-status-indicator metro-b ${activeElements.metroB}`}
-            >
-              {activeElements.metroB === "partial"
-                ? "🚧"
-                : activeElements.metroB === "full"
-                ? "●"
-                : "○"}
-            </span>
-            <span className="layer-name">
-              {t.metroLineB}
-              {activeElements.metroB === "partial" && (
-                <span className="layer-status"> ({t.building})</span>
-              )}
-            </span>
-          </div>
-
-          <div className={`layer-item ${visibility.metroC ? "" : "inactive"}`}>
-            <span
-              className={`layer-status-indicator metro-c ${activeElements.metroC}`}
-            >
-              {activeElements.metroC === "partial"
-                ? "🚧"
-                : activeElements.metroC === "full"
-                ? "●"
-                : "○"}
-            </span>
-            <span className="layer-name">
-              {t.metroLineC}
-              {activeElements.metroC === "partial" && (
-                <span className="layer-status"> ({t.building})</span>
-              )}
-            </span>
-          </div>
-
-          <div
-            className={`layer-item ${visibility.premetro ? "" : "inactive"}`}
-          >
-            <span
-              className={`layer-status-indicator premetro ${activeElements.premetro}`}
-            >
-              {activeElements.premetro === "partial"
-                ? "🚧"
-                : activeElements.premetro === "full"
-                ? "●"
-                : "○"}
-            </span>
-            <span className="layer-name">
-              {t.premetroTunnel}
-              {activeElements.premetro === "partial" && (
-                <span className="layer-status"> ({t.building})</span>
-              )}
-            </span>
-          </div>
-
-          <div className={`layer-item ${visibility.gondola ? "" : "inactive"}`}>
-            <span
-              className={`layer-status-indicator gondola ${activeElements.gondola}`}
-            >
-              {activeElements.gondola === "partial"
-                ? "🚧"
-                : activeElements.gondola === "full"
-                ? "●"
-                : "○"}
-            </span>
-            <span className="layer-name">
-              {t.savaSkyway}
-              {activeElements.gondola === "partial" && (
-                <span className="layer-status"> ({t.building})</span>
-              )}
-            </span>
-          </div>
-
-          <div
-            className={`layer-item ${
-              selectedPlan !== "ambitious"
-                ? "disabled"
-                : visibility.medvednicaGondola
-                ? ""
-                : "inactive"
-            }`}
-          >
-            <span
-              className={`layer-status-indicator medvednica-gondola ${
-                selectedPlan !== "ambitious"
-                  ? "none"
-                  : activeElements.medvednicaGondola
-              }`}
-            >
-              {selectedPlan !== "ambitious"
-                ? "○"
-                : activeElements.medvednicaGondola === "partial"
-                ? "🚧"
-                : activeElements.medvednicaGondola === "full"
-                ? "●"
-                : "○"}
-            </span>
-            <span className="layer-name">
-              {t.medvednicaSkyway}
-              {selectedPlan === "ambitious" &&
-                activeElements.medvednicaGondola === "partial" && (
+          <div className="layer-list">
+            <div
+              className={`layer-item ${visibility.metroA ? "" : "inactive"}`}>
+              <span
+                className={`layer-status-indicator metro-a ${activeElements.metroA}`}>
+                {activeElements.metroA === "partial"
+                  ? "🚧"
+                  : activeElements.metroA === "full"
+                  ? "●"
+                  : "○"}
+              </span>
+              <span className="layer-name">
+                {t.metroLineA}
+                {activeElements.metroA === "partial" && (
                   <span className="layer-status"> ({t.building})</span>
                 )}
-            </span>
+              </span>
+            </div>
+
+            <div
+              className={`layer-item ${visibility.metroB ? "" : "inactive"}`}>
+              <span
+                className={`layer-status-indicator metro-b ${activeElements.metroB}`}>
+                {activeElements.metroB === "partial"
+                  ? "🚧"
+                  : activeElements.metroB === "full"
+                  ? "●"
+                  : "○"}
+              </span>
+              <span className="layer-name">
+                {t.metroLineB}
+                {activeElements.metroB === "partial" && (
+                  <span className="layer-status"> ({t.building})</span>
+                )}
+              </span>
+            </div>
+
+            <div
+              className={`layer-item ${visibility.metroC ? "" : "inactive"}`}>
+              <span
+                className={`layer-status-indicator metro-c ${activeElements.metroC}`}>
+                {activeElements.metroC === "partial"
+                  ? "🚧"
+                  : activeElements.metroC === "full"
+                  ? "●"
+                  : "○"}
+              </span>
+              <span className="layer-name">
+                {t.metroLineC}
+                {activeElements.metroC === "partial" && (
+                  <span className="layer-status"> ({t.building})</span>
+                )}
+              </span>
+            </div>
+
+            <div
+              className={`layer-item ${visibility.premetro ? "" : "inactive"}`}>
+              <span
+                className={`layer-status-indicator premetro ${activeElements.premetro}`}>
+                {activeElements.premetro === "partial"
+                  ? "🚧"
+                  : activeElements.premetro === "full"
+                  ? "●"
+                  : "○"}
+              </span>
+              <span className="layer-name">
+                {t.premetroTunnel}
+                {activeElements.premetro === "partial" && (
+                  <span className="layer-status"> ({t.building})</span>
+                )}
+              </span>
+            </div>
+
+            <div
+              className={`layer-item ${visibility.gondola ? "" : "inactive"}`}>
+              <span
+                className={`layer-status-indicator gondola ${activeElements.gondola}`}>
+                {activeElements.gondola === "partial"
+                  ? "🚧"
+                  : activeElements.gondola === "full"
+                  ? "●"
+                  : "○"}
+              </span>
+              <span className="layer-name">
+                {t.savaSkyway}
+                {activeElements.gondola === "partial" && (
+                  <span className="layer-status"> ({t.building})</span>
+                )}
+              </span>
+            </div>
+
+            <div
+              className={`layer-item ${
+                selectedPlan !== "ambitious"
+                  ? "disabled"
+                  : visibility.medvednicaGondola
+                  ? ""
+                  : "inactive"
+              }`}>
+              <span
+                className={`layer-status-indicator medvednica-gondola ${
+                  selectedPlan !== "ambitious"
+                    ? "none"
+                    : activeElements.medvednicaGondola
+                }`}>
+                {selectedPlan !== "ambitious"
+                  ? "○"
+                  : activeElements.medvednicaGondola === "partial"
+                  ? "🚧"
+                  : activeElements.medvednicaGondola === "full"
+                  ? "●"
+                  : "○"}
+              </span>
+              <span className="layer-name">
+                {t.medvednicaSkyway}
+                {selectedPlan === "ambitious" &&
+                  activeElements.medvednicaGondola === "partial" && (
+                    <span className="layer-status"> ({t.building})</span>
+                  )}
+              </span>
+            </div>
+
+            <div
+              className={`layer-item ${
+                visibility.development ? "" : "inactive"
+              }`}>
+              <span
+                className={`layer-status-indicator development ${activeElements.development}`}>
+                {activeElements.development === "partial"
+                  ? "🚧"
+                  : activeElements.development === "full"
+                  ? "●"
+                  : "○"}
+              </span>
+              <span className="layer-name">
+                {t.developmentZones}
+                {activeElements.development === "partial" && (
+                  <span className="layer-status"> ({t.planning})</span>
+                )}
+              </span>
+            </div>
           </div>
 
-          <div
-            className={`layer-item ${visibility.development ? "" : "inactive"}`}
-          >
-            <span
-              className={`layer-status-indicator development ${activeElements.development}`}
-            >
-              {activeElements.development === "partial"
-                ? "🚧"
-                : activeElements.development === "full"
-                ? "●"
-                : "○"}
-            </span>
-            <span className="layer-name">
-              {t.developmentZones}
-              {activeElements.development === "partial" && (
-                <span className="layer-status"> ({t.planning})</span>
-              )}
-            </span>
-          </div>
-        </div>
-
-        {/* 3D Graphics Settings */}
-        <div className="graphics-settings">
-          <p className="graphics-settings-label">{t.graphicsSettings}</p>
-          <div className="graphics-settings-list">
-            <div
-              className={`layer-item clickable ${
-                visibility.buildings3d ? "" : "inactive"
-              }`}
-              onClick={() => setBuildings3dEnabled(!buildings3dEnabled)}
-            >
+          {/* 3D Graphics Settings */}
+          <div className="graphics-settings">
+            <p className="graphics-settings-label">{t.graphicsSettings}</p>
+            <div className="graphics-settings-list">
               <div
-                className={`layer-checkbox ${
-                  visibility.buildings3d ? "active development" : ""
+                className={`layer-item clickable ${
+                  visibility.buildings3d ? "" : "inactive"
                 }`}
-              >
-                {visibility.buildings3d && (
-                  <span className="layer-checkbox-icon">✓</span>
-                )}
-              </div>
-              <span className="layer-name">{t.buildings3d}</span>
-            </div>
-
-            <div
-              className={`layer-item clickable ${
-                mode3dEnabled ? "" : "inactive"
-              }`}
-              onClick={() => setMode3dEnabled(!mode3dEnabled)}
-            >
-              <div
-                className={`layer-checkbox ${
-                  mode3dEnabled ? "active development" : ""
-                }`}
-              >
-                {mode3dEnabled && (
-                  <span className="layer-checkbox-icon">✓</span>
-                )}
-              </div>
-              <span className="layer-name">{t.mode3d}</span>
-            </div>
-
-            <div
-              className={`layer-item clickable ${
-                animatedTrafficEnabled ? "" : "inactive"
-              }`}
-              onClick={() => setAnimatedTrafficEnabled(!animatedTrafficEnabled)}
-            >
-              <div
-                className={`layer-checkbox ${
-                  animatedTrafficEnabled ? "active development" : ""
-                }`}
-              >
-                {animatedTrafficEnabled && (
-                  <span className="layer-checkbox-icon">✓</span>
-                )}
-              </div>
-              <span className="layer-name">{t.animatedTraffic}</span>
-            </div>
-
-            {animatedTrafficEnabled && (
-              <div className="speed-control">
-                <span className="speed-label">{t.trafficSpeed}</span>
-                <div className="speed-buttons">
-                  <button
-                    className={`speed-button ${
-                      trafficSpeed === "slow" ? "active" : ""
-                    }`}
-                    onClick={() => setTrafficSpeed("slow")}
-                  >
-                    {t.speedSlow}
-                  </button>
-                  <button
-                    className={`speed-button ${
-                      trafficSpeed === "normal" ? "active" : ""
-                    }`}
-                    onClick={() => setTrafficSpeed("normal")}
-                  >
-                    {t.speedNormal}
-                  </button>
-                  <button
-                    className={`speed-button ${
-                      trafficSpeed === "fast" ? "active" : ""
-                    }`}
-                    onClick={() => setTrafficSpeed("fast")}
-                  >
-                    {t.speedFast}
-                  </button>
+                onClick={() => setBuildings3dEnabled(!buildings3dEnabled)}>
+                <div
+                  className={`layer-checkbox ${
+                    visibility.buildings3d ? "active development" : ""
+                  }`}>
+                  {visibility.buildings3d && (
+                    <span className="layer-checkbox-icon">✓</span>
+                  )}
                 </div>
+                <span className="layer-name">{t.buildings3d}</span>
               </div>
-            )}
+
+              <div
+                className={`layer-item clickable ${
+                  mode3dEnabled ? "" : "inactive"
+                }`}
+                onClick={() => setMode3dEnabled(!mode3dEnabled)}>
+                <div
+                  className={`layer-checkbox ${
+                    mode3dEnabled ? "active development" : ""
+                  }`}>
+                  {mode3dEnabled && (
+                    <span className="layer-checkbox-icon">✓</span>
+                  )}
+                </div>
+                <span className="layer-name">{t.mode3d}</span>
+              </div>
+
+              <div
+                className={`layer-item clickable ${
+                  animatedTrafficEnabled ? "" : "inactive"
+                }`}
+                onClick={() =>
+                  setAnimatedTrafficEnabled(!animatedTrafficEnabled)
+                }>
+                <div
+                  className={`layer-checkbox ${
+                    animatedTrafficEnabled ? "active development" : ""
+                  }`}>
+                  {animatedTrafficEnabled && (
+                    <span className="layer-checkbox-icon">✓</span>
+                  )}
+                </div>
+                <span className="layer-name">{t.animatedTraffic}</span>
+              </div>
+
+              {animatedTrafficEnabled && (
+                <div className="speed-control">
+                  <span className="speed-label">{t.trafficSpeed}</span>
+                  <div className="speed-buttons">
+                    <button
+                      className={`speed-button ${
+                        trafficSpeed === "slow" ? "active" : ""
+                      }`}
+                      onClick={() => setTrafficSpeed("slow")}>
+                      {t.speedSlow}
+                    </button>
+                    <button
+                      className={`speed-button ${
+                        trafficSpeed === "normal" ? "active" : ""
+                      }`}
+                      onClick={() => setTrafficSpeed("normal")}>
+                      {t.speedNormal}
+                    </button>
+                    <button
+                      className={`speed-button ${
+                        trafficSpeed === "fast" ? "active" : ""
+                      }`}
+                      onClick={() => setTrafficSpeed("fast")}>
+                      {t.speedFast}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
 
-        <div className="legend">
-          <p className="legend-title">
-            <strong>{t.activeElementsTitle}</strong>
-          </p>
-          <p>{t.activeElementsChecked}</p>
-          <p>{t.activeElementsTimeline}</p>
-          <p>{t.activeElementsClickStations}</p>
-        </div>
+          <div className="legend">
+            <p className="legend-title">
+              <strong>{t.activeElementsTitle}</strong>
+            </p>
+            <p>{t.activeElementsChecked}</p>
+            <p>{t.activeElementsTimeline}</p>
+            <p>{t.activeElementsClickStations}</p>
+          </div>
 
-        <button onClick={resetView} className="reset-button">
-          {t.resetViewButton}
-        </button>
+          <button onClick={resetView} className="reset-button">
+            {t.resetViewButton}
+          </button>
         </div>
       </div>
 
       {/* Timeline Control */}
-      <div className="timeline-control">
+      <div className={`timeline-control ${isMobile ? "mobile" : ""}`}>
         <div className="timeline-header">
           <div className="timeline-info">
             <h3>
-              {t.timelineLabel} {selectedYear}
+              {isMobile ? selectedYear : `${t.timelineLabel} ${selectedYear}`}
             </h3>
-            <p>{getTimelineDescription(selectedYear, selectedPlan, t)}</p>
+            {!isMobile && (
+              <p>{getTimelineDescription(selectedYear, selectedPlan, t)}</p>
+            )}
           </div>
           <button
             onClick={() => setSelectedYear(2050)}
-            className="timeline-full-network-button"
-          >
-            {t.viewFullNetwork}
+            className="timeline-full-network-button">
+            {isMobile ? "2050" : t.viewFullNetwork}
           </button>
         </div>
 
@@ -1408,8 +1429,7 @@ export default function Map() {
                 onClick={() => {
                   setSelectedYear(phase.year);
                   scrollToTimelineSection(phase.year);
-                }}
-              >
+                }}>
                 <div
                   className={`timeline-marker-dot ${
                     selectedYear >= phase.year ? "active" : ""
@@ -1418,13 +1438,14 @@ export default function Map() {
                 <span
                   className={`timeline-marker-year ${
                     selectedYear === phase.year ? "selected" : ""
-                  }`}
-                >
+                  }`}>
                   {phase.year}
                 </span>
-                <span className="timeline-marker-label">
-                  {getTimelineLabel(phase.year, t)}
-                </span>
+                {!isMobile && (
+                  <span className="timeline-marker-label">
+                    {getTimelineLabel(phase.year, t)}
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -1450,12 +1471,14 @@ export default function Map() {
       </div> */}
 
       {/* Info Panel */}
-      <div className={`info-panel ${infoPanelMinimized ? "minimized" : ""}`}>
+      <div
+        className={`info-panel ${infoPanelMinimized ? "minimized" : ""} ${
+          isMobile ? "mobile" : ""
+        }`}>
         <button
           className="info-panel-toggle"
           onClick={() => setInfoPanelMinimized(!infoPanelMinimized)}
-          title={infoPanelMinimized ? "Show info panel" : "Hide info panel"}
-        >
+          title={infoPanelMinimized ? "Show info panel" : "Hide info panel"}>
           {infoPanelMinimized ? "📖" : "✕"}
         </button>
 
@@ -1495,8 +1518,7 @@ export default function Map() {
                   }`}
                   onClick={() => {
                     setSelectedYear(phase.year);
-                  }}
-                >
+                  }}>
                   <h4>
                     {phase.year} - {getTimelineLabel(phase.year, t)}
                   </h4>

@@ -399,7 +399,8 @@
 .timeline-control {
   position: absolute;
   bottom: 30px;
-  left: 50%;
+  left: 0;
+  right: 0;
   transform: translateX(-50%);
   background: rgba(17, 24, 39, 0.9);
   padding: 20px 30px;
@@ -703,4 +704,472 @@
   font-size: 13px;
   line-height: 1.5;
   color: rgba(229, 231, 235, 0.85);
+}
+
+/* ========================================
+   MOBILE RESPONSIVE STYLES
+   ======================================== */
+
+/* Mobile Menu Toggle Button (Hamburger) */
+.mobile-menu-toggle {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 122;
+  width: 48px;
+  height: 48px;
+  background: rgba(17, 24, 39, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-toggle:hover {
+  background: rgba(17, 24, 39, 1);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.mobile-menu-toggle.active {
+  left: calc(85% - 32px);
+  background: rgba(17, 24, 39, 0.95);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 767px) {
+  .mobile-menu-toggle.active {
+    left: calc(95% - 32px);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .mobile-menu-toggle.active {
+    left: 308px;
+  }
+}
+
+.hamburger-icon {
+  width: 22px;
+  height: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.hamburger-icon span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background: white;
+  border-radius: 1px;
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-toggle.active .hamburger-icon span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.mobile-menu-toggle.active .hamburger-icon span:nth-child(2) {
+  opacity: 0;
+}
+
+.mobile-menu-toggle.active .hamburger-icon span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Mobile Overlay (for closing panel when tapping outside) */
+.mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 99;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Close button for mobile panel */
+.close-panel-button {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.close-panel-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Hide duplicate close button on mobile - hamburger already shows X when open */
+@media (max-width: 767px) {
+  .close-panel-button {
+    display: none;
+  }
+}
+
+/* ========================================
+   MOBILE BREAKPOINT (max-width: 767px)
+   ======================================== */
+@media (max-width: 767px) {
+  /* Control Panel - Slide-out drawer on mobile */
+  .control-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 85%;
+    max-width: 320px;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px 16px;
+    z-index: 125;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .control-panel.open {
+    transform: translateX(0);
+  }
+
+  .control-panel.closed {
+    transform: translateX(-100%);
+  }
+
+  .control-panel-title {
+    font-size: 16px;
+  }
+
+  .control-panel-subtitle {
+    font-size: 11px;
+    margin-bottom: 8px;
+  }
+
+  .plan-switcher-container {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+  }
+
+  .plan-description {
+    font-size: 9px;
+    margin-top: 6px;
+  }
+
+  .plan-cost {
+    font-size: 9px;
+  }
+
+  .plan-button {
+    padding: 10px 8px;
+    font-size: 11px;
+  }
+
+  .layer-name {
+    font-size: 13px;
+  }
+
+  .layer-list {
+    gap: 6px;
+  }
+
+  .layer-item {
+    min-height: 40px;
+  }
+
+  .graphics-settings {
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  .graphics-settings-list {
+    gap: 6px;
+  }
+
+  .speed-control {
+    margin-left: 20px;
+    padding: 6px;
+  }
+
+  .legend {
+    margin-top: 10px;
+    padding-top: 10px;
+  }
+
+  .legend p {
+    font-size: 10px;
+    margin-bottom: 2px;
+  }
+
+  .reset-button {
+    margin-top: 10px;
+    padding: 10px 16px;
+    min-height: 44px;
+  }
+
+  /* Timeline Control - Compact version for mobile */
+  .timeline-control {
+    min-width: auto;
+    width: calc(80% - 32px);
+    margin: 0px auto;
+    bottom: 86px;
+    transform: none;
+    padding: 12px 16px;
+  }
+
+  .timeline-control.mobile {
+    padding: 10px 22px;
+  }
+
+  .timeline-header {
+    margin-bottom: 8px;
+    display: none;
+  }
+
+  .timeline-info h3 {
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .timeline-info p {
+    display: none;
+  }
+
+  .timeline-full-network-button {
+    padding: 8px 12px;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .timeline-marker-dot {
+    width: 18px;
+    height: 18px;
+  }
+
+  .timeline-marker-year {
+    font-size: 10px;
+  }
+
+  .timeline-marker-label {
+    display: none;
+  }
+
+  .timeline-slider-container {
+    padding-top: 6px;
+  }
+
+  .timeline-track {
+    top: 17px;
+  }
+
+  .timeline-progress {
+    top: 17px;
+  }
+
+  .timeline-markers {
+    top: 2px;
+  }
+
+  /* Info Panel - Top overlay on mobile */
+  .info-panel {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    left: 16px;
+    bottom: auto;
+    width: auto;
+    max-height: calc(100vh - 140px);
+    border-radius: 12px;
+    padding: 16px;
+    padding-top: 16px;
+    transform: none;
+    z-index: 126;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+
+  .info-panel.mobile {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .info-panel.mobile.minimized {
+    /* opacity: 0; */
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .info-panel.minimized {
+    width: 48px;
+    height: 48px;
+    top: 16px;
+    right: 16px;
+    left: auto;
+    bottom: auto;
+    border-radius: 12px;
+    padding: 0;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .info-panel-toggle {
+    top: 12px;
+    right: 12px;
+    transform: none;
+  }
+
+  .info-panel.minimized .info-panel-toggle {
+    position: static;
+    transform: none;
+    margin: 10px;
+  }
+
+  .info-panel-content {
+    max-height: calc(70vh - 80px);
+  }
+
+  .info-panel-title {
+    font-size: 20px;
+    margin-bottom: 16px;
+  }
+
+  .info-section h3 {
+    font-size: 16px;
+  }
+
+  .info-section p {
+    font-size: 13px;
+  }
+
+  .timeline-detail-section {
+    padding: 12px;
+  }
+
+  .timeline-detail-section h4 {
+    font-size: 14px;
+  }
+
+  .timeline-detail-section p {
+    font-size: 12px;
+  }
+
+  /* Adjust Mapbox controls */
+  .map-container .mapboxgl-ctrl-bottom-right {
+    bottom: 10px;
+    right: 2px;
+  }
+
+  .map-container .mapboxgl-ctrl-bottom-left {
+    bottom: 10px;
+    left: 2px;
+  }
+}
+
+/* ========================================
+   TABLET BREAKPOINT (768px - 1023px)
+   ======================================== */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Control Panel - Slide-out drawer on tablet but wider */
+  .control-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 340px;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 20;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .control-panel.open {
+    transform: translateX(0);
+  }
+
+  .control-panel.closed {
+    transform: translateX(-100%);
+  }
+
+  /* Timeline Control - Fits better on tablet */
+  .timeline-control {
+    min-width: auto;
+    width: calc(100% - 100px);
+    max-width: 600px;
+    padding: 16px 24px;
+  }
+
+  /* Info Panel - Right side but narrower */
+  .info-panel {
+    width: 320px;
+    right: 20px;
+  }
+
+  .info-panel.minimized {
+    width: 50px;
+    height: 50px;
+  }
+
+  /* Adjust Mapbox controls */
+  .map-container .mapboxgl-ctrl-bottom-right {
+    bottom: 10px;
+  }
+}
+
+/* ========================================
+   TOUCH-FRIENDLY IMPROVEMENTS
+   ======================================== */
+@media (hover: none) and (pointer: coarse) {
+  /* Increase touch targets for touch devices */
+  .layer-item {
+    min-height: 48px;
+    padding: 8px 4px;
+  }
+
+  .layer-checkbox {
+    width: 24px;
+    height: 24px;
+  }
+
+  .plan-button {
+    min-height: 44px;
+  }
+
+  .speed-button {
+    min-height: 40px;
+    padding: 8px 14px;
+  }
+
+  .timeline-marker {
+    padding: 8px;
+    margin: -8px;
+  }
+
+  .timeline-marker-dot {
+    width: 20px;
+    height: 20px;
+  }
 }
