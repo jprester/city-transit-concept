@@ -1057,26 +1057,29 @@ export default function Map() {
 
       {/* Control Panel */}
       <div className="control-panel">
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-          }}
-        >
-          <div>
-            <h2 className="control-panel-title">{t.controlPanelTitle}</h2>
-            <p className="control-panel-subtitle">{t.controlPanelSubtitle}</p>
-          </div>
-          <button
-            onClick={() => setLanguage(language === "hr" ? "en" : "hr")}
-            className="language-selector"
+        <div className="control-panel-header">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+            }}
           >
-            {language === "hr" ? "EN" : "HR"}
-          </button>
+            <div>
+              <h2 className="control-panel-title">{t.controlPanelTitle}</h2>
+              <p className="control-panel-subtitle">{t.controlPanelSubtitle}</p>
+            </div>
+            <button
+              onClick={() => setLanguage(language === "hr" ? "en" : "hr")}
+              className="language-selector"
+            >
+              {language === "hr" ? "EN" : "HR"}
+            </button>
+          </div>
         </div>
 
-        {/* Plan Switcher */}
+        <div className="control-panel-content">
+          {/* Plan Switcher */}
         <div className="plan-switcher-container">
           <p className="plan-switcher-label">{t.transitPlanLabel}</p>
           <div className="plan-switcher-buttons">
@@ -1366,6 +1369,7 @@ export default function Map() {
         <button onClick={resetView} className="reset-button">
           {t.resetViewButton}
         </button>
+        </div>
       </div>
 
       {/* Timeline Control */}
