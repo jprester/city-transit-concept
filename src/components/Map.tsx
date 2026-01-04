@@ -1489,46 +1489,46 @@ export default function Map() {
 
               <section className="info-section">
                 <h3>{t.overviewTitle}</h3>
-              <p>
-                {selectedPlan === "realistic"
-                  ? t.overviewRealistic
-                  : t.overviewAmbitious}
-              </p>
-            </section>
+                <p>
+                  {selectedPlan === "realistic"
+                    ? t.overviewRealistic
+                    : t.overviewAmbitious}
+                </p>
+              </section>
 
-            <section className="info-section">
-              <h3>{t.reasoningTitle}</h3>
-              <p>
-                {selectedPlan === "realistic"
-                  ? t.reasoningRealistic
-                  : t.reasoningAmbitious}
-              </p>
-            </section>
+              <section className="info-section">
+                <h3>{t.reasoningTitle}</h3>
+                <p>
+                  {selectedPlan === "realistic"
+                    ? t.reasoningRealistic
+                    : t.reasoningAmbitious}
+                </p>
+              </section>
 
-            <section className="info-section">
-              <h3>{t.timelineDetailsTitle}</h3>
+              <section className="info-section">
+                <h3>{t.timelineDetailsTitle}</h3>
 
-              {currentPlan.timeline.map((phase) => (
-                <div
-                  key={phase.year}
-                  ref={(el) => {
-                    timelineRefs.current[phase.year] = el;
-                  }}
-                  className={`timeline-detail-section ${
-                    selectedYear === phase.year ? "active" : ""
-                  }`}
-                  onClick={() => {
-                    setSelectedYear(phase.year);
-                  }}>
-                  <h4>
-                    {phase.year} - {getTimelineLabel(phase.year, t)}
-                  </h4>
-                  <p>{getTimelineDescription(phase.year, selectedPlan, t)}</p>
-                </div>
-              ))}
-            </section>
-          </div>
-        )}
+                {currentPlan.timeline.map((phase) => (
+                  <div
+                    key={phase.year}
+                    ref={(el) => {
+                      timelineRefs.current[phase.year] = el;
+                    }}
+                    className={`timeline-detail-section ${
+                      selectedYear === phase.year ? "active" : ""
+                    }`}
+                    onClick={() => {
+                      setSelectedYear(phase.year);
+                    }}>
+                    <h4>
+                      {phase.year} - {getTimelineLabel(phase.year, t)}
+                    </h4>
+                    <p>{getTimelineDescription(phase.year, selectedPlan, t)}</p>
+                  </div>
+                ))}
+              </section>
+            </div>
+          )}
         </div>
       )}
     </div>
